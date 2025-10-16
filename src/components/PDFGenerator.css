@@ -1,0 +1,10 @@
+.pdf-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pdf-button:active {
+  transform: scale(0.98);
+}
