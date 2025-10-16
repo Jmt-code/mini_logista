@@ -15,15 +15,25 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
     const marginTop = 15
     
     // Colores profesionales
-    const primaryColor = { r: 44, g: 62, b: 80 } // Azul oscuro profesional
-    const accentColor = { r: 52, g: 152, b: 219 } // Azul claro
-    const successColor = { r: 39, g: 174, b: 96 } // Verde
+    const primaryColor = { r: 102, g: 126, b: 234 } // #667eea
+    const accentColor = { r: 118, g: 75, b: 162 } // #764ba2
+    const successColor = { r: 17, g: 153, b: 142 } // #11998e
+    //const headerBg = { r: 248, g: 249, b: 250 } // #f8f9fa
     
     // Función para añadir header y footer en cada página
     const addHeaderFooter = (pageNum: number, totalPages: number) => {
-      // Header con fondo profesional
+      // Header con gradiente simulado
       doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
       doc.rect(0, 0, 210, 15, 'F')
+      
+      // Decoración con círculos translúcidos
+      doc.setFillColor(accentColor.r, accentColor.g, accentColor.b)
+      // @ts-ignore - jsPDF GState type not fully defined
+      doc.setGState(new doc.GState({ opacity: 0.3 }))
+      doc.circle(200, 7.5, 8, 'F')
+      doc.circle(10, 7.5, 6, 'F')
+      // @ts-ignore
+      doc.setGState(new doc.GState({ opacity: 1 }))
       
       // Título
       doc.setFontSize(16)
@@ -90,28 +100,32 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.line(20, yPosition, 190, yPosition)
       yPosition += 8
       
-      // Encabezados de tabla
+      // Encabezado de tabla con estilo moderno
       doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
-      doc.rect(20, yPosition, 170, 8, 'F')
-      doc.setFontSize(9)
+      doc.roundedRect(20, yPosition, 170, 9, 2, 2, 'F')
+      
+      doc.setFontSize(10)
       doc.setTextColor(255, 255, 255)
       doc.setFont('helvetica', 'bold')
-      doc.text('Nº', 25, yPosition + 5)
-      doc.text('Artículo', 40, yPosition + 5)
-      doc.text('Cantidad', 160, yPosition + 5)
-      yPosition += 8
+      doc.text('#', 25, yPosition + 6)
+      doc.text('Artículo', 40, yPosition + 6)
+      doc.text('Cantidad', 160, yPosition + 6)
+      yPosition += 9
       
-      // Filas de datos
+      // Filas de datos con estilo mejorado
       let alternate = false
       let contador = 1
       formData.peticionesCompra.forEach((item) => {
         if (item.nombreArticulo || item.cantidad) {
           yPosition = checkNewPage(10)
           
-          // Fondo alternado
+          // Fondo alternado con bordes redondeados
           if (alternate) {
-            doc.setFillColor(245, 245, 245)
-            doc.rect(20, yPosition, 170, 7, 'F')
+            doc.setFillColor(250, 251, 252)
+            doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
+          } else {
+            doc.setFillColor(255, 255, 255)
+            doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
           }
           
           doc.setFontSize(9)
@@ -145,29 +159,33 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.line(20, yPosition, 190, yPosition)
       yPosition += 8
       
-      // Encabezados de tabla
+      // Encabezado de tabla con estilo moderno
       doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
-      doc.rect(20, yPosition, 170, 8, 'F')
-      doc.setFontSize(9)
+      doc.roundedRect(20, yPosition, 170, 9, 2, 2, 'F')
+      
+      doc.setFontSize(10)
       doc.setTextColor(255, 255, 255)
       doc.setFont('helvetica', 'bold')
-      doc.text('Nº', 25, yPosition + 5)
-      doc.text('Fecha', 40, yPosition + 5)
-      doc.text('Lugar', 80, yPosition + 5)
-      doc.text('Tipo de Trabajo', 135, yPosition + 5)
-      yPosition += 8
+      doc.text('#', 25, yPosition + 6)
+      doc.text('Fecha', 40, yPosition + 6)
+      doc.text('Lugar', 80, yPosition + 6)
+      doc.text('Tipo de Trabajo', 135, yPosition + 6)
+      yPosition += 9
       
-      // Filas de datos
+      // Filas de datos con estilo mejorado
       let alternate = false
       let contador = 1
       formData.registrosTrabajo.forEach((item) => {
         if (item.fechaTrabajo || item.lugar || item.tipoTrabajo) {
           yPosition = checkNewPage(10)
           
-          // Fondo alternado
+          // Fondo alternado con bordes redondeados
           if (alternate) {
-            doc.setFillColor(245, 245, 245)
-            doc.rect(20, yPosition, 170, 7, 'F')
+            doc.setFillColor(250, 251, 252)
+            doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
+          } else {
+            doc.setFillColor(255, 255, 255)
+            doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
           }
           
           doc.setFontSize(9)
@@ -207,34 +225,38 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.line(20, yPosition, 190, yPosition)
       yPosition += 8
       
-      // Encabezados de tabla
+      // Encabezado de tabla con estilo moderno
       doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
-      doc.rect(20, yPosition, 170, 8, 'F')
+      doc.roundedRect(20, yPosition, 170, 9, 2, 2, 'F')
+      
       doc.setFontSize(9)
       doc.setTextColor(255, 255, 255)
       doc.setFont('helvetica', 'bold')
-      doc.text('Nº', 25, yPosition + 5)
-      doc.text('Ticket', 35, yPosition + 5)
-      doc.text('Fecha', 65, yPosition + 5)
-      doc.text('Artículo', 95, yPosition + 5)
-      doc.text('Cant.', 140, yPosition + 5)
-      doc.text('P/u', 160, yPosition + 5)
-      doc.text('Total', 178, yPosition + 5)
-      yPosition += 8
+      doc.text('#', 25, yPosition + 6)
+      doc.text('Ticket', 35, yPosition + 6)
+      doc.text('Fecha', 65, yPosition + 6)
+      doc.text('Artículo', 95, yPosition + 6)
+      doc.text('Cant.', 140, yPosition + 6)
+      doc.text('P/u', 160, yPosition + 6)
+      doc.text('Total', 178, yPosition + 6)
+      yPosition += 9
       
       let totalGeneral = 0
       let alternate = false
       
-      // Filas de datos
+      // Filas de datos con estilo mejorado
       let contador = 1
       formData.comprasRealizadas.forEach((item) => {
         if (item.numeroTicket || item.fecha || item.nombreArticulo) {
           yPosition = checkNewPage(10)
           
-          // Fondo alternado
+          // Fondo alternado con bordes redondeados
           if (alternate) {
-            doc.setFillColor(245, 245, 245)
-            doc.rect(20, yPosition, 170, 7, 'F')
+            doc.setFillColor(250, 251, 252)
+            doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
+          } else {
+            doc.setFillColor(255, 255, 255)
+            doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
           }
           
           doc.setFontSize(8)
@@ -270,25 +292,25 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
         }
       })
       
-      // Total general
+      // Total general con estilo moderno
       if (totalGeneral > 0) {
         yPosition = checkNewPage(12)
         
-        // Línea separadora
-        doc.setDrawColor(200, 200, 200)
-        doc.setLineWidth(0.5)
+        // Línea separadora con gradiente visual
+        doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b)
+        doc.setLineWidth(1)
         doc.line(140, yPosition, 190, yPosition)
         yPosition += 6
         
-        // Fondo para el total
+        // Fondo para el total con bordes redondeados
         doc.setFillColor(successColor.r, successColor.g, successColor.b)
-        doc.rect(140, yPosition - 4, 50, 8, 'F')
+        doc.roundedRect(140, yPosition - 4, 50, 9, 2, 2, 'F')
         
-        doc.setFontSize(10)
+        doc.setFontSize(11)
         doc.setFont('helvetica', 'bold')
         doc.setTextColor(255, 255, 255)
-        doc.text('TOTAL:', 145, yPosition + 1)
-        doc.text(`${totalGeneral.toFixed(2)}€`, 185, yPosition + 1, { align: 'right' })
+        doc.text('TOTAL:', 145, yPosition + 2)
+        doc.text(`${totalGeneral.toFixed(2)}€`, 185, yPosition + 2, { align: 'right' })
         yPosition += 10
       }
       
@@ -310,30 +332,34 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.line(20, yPosition, 190, yPosition)
       yPosition += 8
       
-      // Encabezados de tabla
+      // Encabezado de tabla con estilo moderno
       doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
-      doc.rect(20, yPosition, 170, 8, 'F')
-      doc.setFontSize(9)
+      doc.roundedRect(20, yPosition, 170, 9, 2, 2, 'F')
+      
+      doc.setFontSize(10)
       doc.setTextColor(255, 255, 255)
       doc.setFont('helvetica', 'bold')
-      doc.text('Nº', 25, yPosition + 5)
-      doc.text('Artículo', 40, yPosition + 5)
-      doc.text('Cantidad', 115, yPosition + 5)
-      doc.text('Prenda', 145, yPosition + 5)
-      doc.text('Estado', 170, yPosition + 5)
-      yPosition += 8
+      doc.text('#', 25, yPosition + 6)
+      doc.text('Artículo', 40, yPosition + 6)
+      doc.text('Cantidad', 115, yPosition + 6)
+      doc.text('Prenda', 145, yPosition + 6)
+      doc.text('Estado', 170, yPosition + 6)
+      yPosition += 9
       
-      // Filas de datos
+      // Filas de datos con estilo mejorado
       let alternate = false
       let contador = 1
       formData.inventario.forEach((item) => {
         if (item.nombreArticulo || item.cantidad) {
           yPosition = checkNewPage(10)
           
-          // Fondo alternado
+          // Fondo alternado con bordes redondeados
           if (alternate) {
-            doc.setFillColor(245, 245, 245)
-            doc.rect(20, yPosition, 170, 7, 'F')
+            doc.setFillColor(250, 251, 252)
+            doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
+          } else {
+            doc.setFillColor(255, 255, 255)
+            doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
           }
           
           doc.setFontSize(9)
