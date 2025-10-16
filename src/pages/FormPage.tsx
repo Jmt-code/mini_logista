@@ -2,19 +2,25 @@ import { useState } from 'react'
 import TabNavigation from '../components/TabNavigation'
 import TableView from '../components/TableView'
 import PDFGenerator from '../components/PDFGenerator'
-import { FormData } from '../types/FormTypes'
+import OptionsMenu from '../components/OptionsMenu'
+import { ConfirmModal, ImportModal, ExportModal, SuccessModal } from '../components/Modal'
+import { useFormStore } from '../store/formStore'
 import './FormPage.css'
 
 type TabType = 'peticionCompras' | 'registroTrabajo' | 'comprasRealizadas' | 'inventario'
 
 const FormPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>('peticionCompras')
-  const [formData, setFormData] = useState<FormData>({
-    peticionesCompra: [{ id: '1', nombreArticulo: '', cantidad: '' }],
-    registrosTrabajo: [{ id: '1', fechaTrabajo: '', lugar: '', tipoTrabajo: '' }],
-    comprasRealizadas: [{ id: '1', numeroTicket: '', fecha: '', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }],
-    inventario: [{ id: '1', nombreArticulo: '', cantidad: '', prenda: '', estado: '' }]
-  })
+  const { formData, updateFormData, clearAllData, clearTabData, exportData, importData } = useFormStore()
+  
+  const [showExportModal, setShowExportModal] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [showClearAllModal, setShowClearAllModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [exportCode, setExportCode] = useState('')
 
   const tabs = [
     { id: 'peticionCompras' as TabType, label: 'Petición de Compras' },
@@ -23,109 +29,135 @@ const FormPage = () => {
     { id: 'inventario' as TabType, label: 'Inventario' }
   ]
 
+  const handleExport = () => {
+    const code = exportData()
+    setExportCode(code)
+    setShowExportModal(true)
+  }
+
+  const handleImport = (code: string) => {
+    try {
+      const jsonString = decodeURIComponent(escape(atob(code)))
+      const data = JSON.parse(jsonString)
+      importData(data)
+      setShowImportModal(false)
+      setSuccessMessage('Datos cargados correctamente')
+      setShowSuccessModal(true)
+    } catch (error) {
+      setShowImportModal(false)
+      setErrorMessage('Error al cargar los datos. Por favor, verifica el código.')
+      setShowErrorModal(true)
+    }
+  }
+
+  const handleClearAll = () => {
+    clearAllData()
+    setShowClearAllModal(false)
+  }
+
+  const handleClearTab = () => {
+    const tabMap = {
+      peticionCompras: 'peticionesCompra',
+      registroTrabajo: 'registrosTrabajo',
+      comprasRealizadas: 'comprasRealizadas',
+      inventario: 'inventario'
+    }
+    clearTabData(tabMap[activeTab] as keyof typeof formData)
+  }
+
   const handleAddRow = (tabId: TabType) => {
     const newId = Date.now().toString()
+    const tabMap = {
+      peticionCompras: 'peticionesCompra',
+      registroTrabajo: 'registrosTrabajo',
+      comprasRealizadas: 'comprasRealizadas',
+      inventario: 'inventario'
+    }
+    
+    const key = tabMap[tabId] as keyof typeof formData
     
     switch(tabId) {
       case 'peticionCompras':
-        setFormData(prev => ({
-          ...prev,
-          peticionesCompra: [{ id: newId, nombreArticulo: '', cantidad: '' }, ...prev.peticionesCompra]
-        }))
+        updateFormData(key, [{ id: newId, nombreArticulo: '', cantidad: '' }, ...formData.peticionesCompra])
         break
       case 'registroTrabajo':
-        setFormData(prev => ({
-          ...prev,
-          registrosTrabajo: [{ id: newId, fechaTrabajo: '', lugar: '', tipoTrabajo: '' }, ...prev.registrosTrabajo]
-        }))
+        updateFormData(key, [{ id: newId, fechaTrabajo: '', lugar: '', tipoTrabajo: '' }, ...formData.registrosTrabajo])
         break
       case 'comprasRealizadas':
-        setFormData(prev => ({
-          ...prev,
-          comprasRealizadas: [{ id: newId, numeroTicket: '', fecha: '', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }, ...prev.comprasRealizadas]
-        }))
+        updateFormData(key, [{ id: newId, numeroTicket: '', fecha: '', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }, ...formData.comprasRealizadas])
         break
       case 'inventario':
-        setFormData(prev => ({
-          ...prev,
-          inventario: [{ id: newId, nombreArticulo: '', cantidad: '', prenda: '', estado: '' }, ...prev.inventario]
-        }))
+        updateFormData(key, [{ id: newId, nombreArticulo: '', cantidad: '', prenda: '', estado: '' }, ...formData.inventario])
         break
     }
   }
 
   const handleDeleteRow = (tabId: TabType, rowId: string) => {
+    const tabMap = {
+      peticionCompras: 'peticionesCompra',
+      registroTrabajo: 'registrosTrabajo',
+      comprasRealizadas: 'comprasRealizadas',
+      inventario: 'inventario'
+    }
+    
+    const key = tabMap[tabId] as keyof typeof formData
+    
     switch(tabId) {
       case 'peticionCompras':
-        setFormData(prev => ({
-          ...prev,
-          peticionesCompra: prev.peticionesCompra.filter(item => item.id !== rowId)
-        }))
+        updateFormData(key, formData.peticionesCompra.filter(item => item.id !== rowId))
         break
       case 'registroTrabajo':
-        setFormData(prev => ({
-          ...prev,
-          registrosTrabajo: prev.registrosTrabajo.filter(item => item.id !== rowId)
-        }))
+        updateFormData(key, formData.registrosTrabajo.filter(item => item.id !== rowId))
         break
       case 'comprasRealizadas':
-        setFormData(prev => ({
-          ...prev,
-          comprasRealizadas: prev.comprasRealizadas.filter(item => item.id !== rowId)
-        }))
+        updateFormData(key, formData.comprasRealizadas.filter(item => item.id !== rowId))
         break
       case 'inventario':
-        setFormData(prev => ({
-          ...prev,
-          inventario: prev.inventario.filter(item => item.id !== rowId)
-        }))
+        updateFormData(key, formData.inventario.filter(item => item.id !== rowId))
         break
     }
   }
 
   const handleUpdateRow = (tabId: TabType, rowId: string, field: string, value: any) => {
+    const tabMap = {
+      peticionCompras: 'peticionesCompra',
+      registroTrabajo: 'registrosTrabajo',
+      comprasRealizadas: 'comprasRealizadas',
+      inventario: 'inventario'
+    }
+    
+    const key = tabMap[tabId] as keyof typeof formData
+    
     switch(tabId) {
       case 'peticionCompras':
-        setFormData(prev => ({
-          ...prev,
-          peticionesCompra: prev.peticionesCompra.map(item => 
-            item.id === rowId ? { ...item, [field]: value } : item
-          )
-        }))
+        updateFormData(key, formData.peticionesCompra.map(item => 
+          item.id === rowId ? { ...item, [field]: value } : item
+        ))
         break
       case 'registroTrabajo':
-        setFormData(prev => ({
-          ...prev,
-          registrosTrabajo: prev.registrosTrabajo.map(item => 
-            item.id === rowId ? { ...item, [field]: value } : item
-          )
-        }))
+        updateFormData(key, formData.registrosTrabajo.map(item => 
+          item.id === rowId ? { ...item, [field]: value } : item
+        ))
         break
       case 'comprasRealizadas':
-        setFormData(prev => ({
-          ...prev,
-          comprasRealizadas: prev.comprasRealizadas.map(item => {
-            if (item.id === rowId) {
-              const updatedItem = { ...item, [field]: value }
-              // Auto-calcular precio/u si cambia total o cantidad
-              if (field === 'cantidad' || field === 'total') {
-                const cantidad = parseFloat(field === 'cantidad' ? value : updatedItem.cantidad) || 0
-                const total = parseFloat(field === 'total' ? value : updatedItem.total.toString()) || 0
-                updatedItem.precioUnidad = cantidad > 0 ? (total / cantidad).toFixed(2) : '0.00'
-              }
-              return updatedItem
+        updateFormData(key, formData.comprasRealizadas.map(item => {
+          if (item.id === rowId) {
+            const updatedItem = { ...item, [field]: value }
+            // Auto-calcular precio/u si cambia total o cantidad
+            if (field === 'cantidad' || field === 'total') {
+              const cantidad = parseFloat(field === 'cantidad' ? value : updatedItem.cantidad) || 0
+              const total = parseFloat(field === 'total' ? value : updatedItem.total.toString()) || 0
+              updatedItem.precioUnidad = cantidad > 0 ? (total / cantidad).toFixed(2) : '0.00'
             }
-            return item
-          })
+            return updatedItem
+          }
+          return item
         }))
         break
       case 'inventario':
-        setFormData(prev => ({
-          ...prev,
-          inventario: prev.inventario.map(item => 
-            item.id === rowId ? { ...item, [field]: value } : item
-          )
-        }))
+        updateFormData(key, formData.inventario.map(item => 
+          item.id === rowId ? { ...item, [field]: value } : item
+        ))
         break
     }
   }
@@ -150,6 +182,11 @@ const FormPage = () => {
       <div className="form-container">
         <header className="form-header">
           <h1 className="form-title">Maria Moran - Logista</h1>
+          <OptionsMenu
+            onExport={handleExport}
+            onImport={() => setShowImportModal(true)}
+            onClearAll={() => setShowClearAllModal(true)}
+          />
         </header>
 
         <TabNavigation 
@@ -165,6 +202,7 @@ const FormPage = () => {
             onAddRow={() => handleAddRow(activeTab)}
             onDeleteRow={(rowId) => handleDeleteRow(activeTab, rowId)}
             onUpdateRow={(rowId, field, value) => handleUpdateRow(activeTab, rowId, field, value)}
+            onClearTab={handleClearTab}
           />
         </div>
 
@@ -172,6 +210,47 @@ const FormPage = () => {
           <PDFGenerator formData={formData} />
         </div>
       </div>
+      
+      <ExportModal
+        isOpen={showExportModal}
+        code={exportCode}
+        onClose={() => setShowExportModal(false)}
+      />
+      
+      <ImportModal
+        isOpen={showImportModal}
+        onImport={handleImport}
+        onCancel={() => setShowImportModal(false)}
+      />
+      
+      <ConfirmModal
+        isOpen={showClearAllModal}
+        title="⚠️ Borrar todos los datos"
+        message="CUIDADO: Se eliminarán todos los elementos de la aplicación. Esta acción es irreversible y no se podrá deshacer."
+        confirmText="Borrar todo"
+        cancelText="Cancelar"
+        onConfirm={handleClearAll}
+        onCancel={() => setShowClearAllModal(false)}
+        isDanger={true}
+      />
+      
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="Éxito"
+        message={successMessage}
+        onClose={() => setShowSuccessModal(false)}
+      />
+      
+      <ConfirmModal
+        isOpen={showErrorModal}
+        title="Error"
+        message={errorMessage}
+        confirmText="Aceptar"
+        cancelText={undefined}
+        onConfirm={() => setShowErrorModal(false)}
+        onCancel={() => setShowErrorModal(false)}
+        isDanger={true}
+      />
     </div>
   )
 }

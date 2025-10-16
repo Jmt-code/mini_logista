@@ -10,6 +10,12 @@
   align-items: center;
   margin-bottom: 1rem;
   gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .table-title {
@@ -17,6 +23,40 @@
   font-weight: 600;
   color: #333;
   margin: 0;
+}
+
+.clear-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.2rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 44px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.clear-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.5);
+}
+
+.clear-button:active {
+  transform: translateY(0);
+}
+
+.clear-icon {
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .add-button {
@@ -55,6 +95,14 @@
 .table-content {
   flex: 1;
   overflow-y: auto;
+  /* Ocultar scrollbar pero mantener funcionalidad */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE y Edge */
+}
+
+/* Ocultar scrollbar en Chrome, Safari y Opera */
+.table-content::-webkit-scrollbar {
+  display: none;
 }
 
 .empty-state {
@@ -112,26 +160,32 @@
   border: none;
   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.75rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  min-height: 26px !important;
+  max-width: 26px !important;
+  max-height: 26px !important;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(255, 107, 107, 0.3);
 }
 
 .delete-button::before {
   content: '✕';
   font-weight: bold;
+  font-size: 0.85rem;
 }
 
 .delete-button:hover {
-  transform: rotate(90deg) scale(1.1);
-  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.5);
+  transform: rotate(90deg) scale(1.15);
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.5);
 }
 
 .delete-button:active {

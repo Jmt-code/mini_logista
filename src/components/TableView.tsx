@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { ConfirmModal } from './Modal'
 import './TableView.css'
 
 interface TableViewProps {
@@ -6,9 +8,49 @@ interface TableViewProps {
   onAddRow: () => void
   onDeleteRow: (rowId: string) => void
   onUpdateRow: (rowId: string, field: string, value: any) => void
+  onClearTab: () => void
 }
 
-const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow }: TableViewProps) => {
+const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab }: TableViewProps) => {
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean, rowId: string | null }>({
+    isOpen: false,
+    rowId: null
+  })
+  const [clearTabConfirm, setClearTabConfirm] = useState(false)
+  
+  const checkRowHasData = (row: any): boolean => {
+    return Object.entries(row).some(([key, value]) => {
+      if (key === 'id') return false
+      if (typeof value === 'string') return value.trim() !== '' && value !== '0.00'
+      return value !== null && value !== undefined
+    })
+  }
+  
+  const handleDeleteClick = (rowId: string) => {
+    const row = data.find(r => r.id === rowId)
+    if (row && checkRowHasData(row)) {
+      setDeleteConfirm({ isOpen: true, rowId })
+    } else {
+      onDeleteRow(rowId)
+    }
+  }
+  
+  const handleConfirmDelete = () => {
+    if (deleteConfirm.rowId) {
+      onDeleteRow(deleteConfirm.rowId)
+    }
+    setDeleteConfirm({ isOpen: false, rowId: null })
+  }
+  
+  const getTabName = () => {
+    switch(tabId) {
+      case 'peticionCompras': return 'Petición de Compras'
+      case 'registroTrabajo': return 'Registro de Trabajo'
+      case 'comprasRealizadas': return 'Compras Realizadas'
+      case 'inventario': return 'Inventario'
+      default: return 'esta pestaña'
+    }
+  }
   
   const renderFields = (row: any) => {
     switch(tabId) {
@@ -204,10 +246,16 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow }: TableVie
           {tabId === 'comprasRealizadas' && 'Compras Realizadas'}
           {tabId === 'inventario' && 'Inventario'}
         </h2>
-        <button className="add-button" onClick={onAddRow}>
-          <span className="add-icon">+</span>
-          Añadir
-        </button>
+        <div className="header-buttons">
+          <button className="clear-button" onClick={() => setClearTabConfirm(true)}>
+            <span className="clear-icon">🗑️</span>
+            Borrar
+          </button>
+          <button className="add-button" onClick={onAddRow}>
+            <span className="add-icon">+</span>
+            Añadir
+          </button>
+        </div>
       </div>
 
       <div className="table-content">
@@ -223,7 +271,7 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow }: TableVie
                   <span className="row-number">#{data.length - index}</span>
                   <button 
                     className="delete-button"
-                    onClick={() => onDeleteRow(row.id)}
+                    onClick={() => handleDeleteClick(row.id)}
                     aria-label="Eliminar"
                   />
                 </div>
@@ -235,6 +283,31 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow }: TableVie
           </div>
         )}
       </div>
+      
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        title="Confirmar eliminación"
+        message="Este registro contiene datos. ¿Estás seguro de que quieres eliminarlo?"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteConfirm({ isOpen: false, rowId: null })}
+        isDanger={true}
+      />
+      
+      <ConfirmModal
+        isOpen={clearTabConfirm}
+        title={`Borrar todos los datos de ${getTabName()}`}
+        message={`¿Estás seguro de que quieres borrar todos los datos de ${getTabName()}? Esta acción no se puede deshacer.`}
+        confirmText="Borrar todo"
+        cancelText="Cancelar"
+        onConfirm={() => {
+          onClearTab()
+          setClearTabConfirm(false)
+        }}
+        onCancel={() => setClearTabConfirm(false)}
+        isDanger={true}
+      />
     </div>
   )
 }

@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { jsPDF } from 'jspdf'
+import { ConfirmModal } from './Modal'
 import { FormData } from '../types/FormTypes'
 import './PDFGenerator.css'
 
@@ -7,6 +9,28 @@ interface PDFGeneratorProps {
 }
 
 const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+
+  const countRecords = () => {
+    const counts = {
+      peticionesCompra: formData.peticionesCompra.filter(item => 
+        item.nombreArticulo || item.cantidad
+      ).length,
+      registrosTrabajo: formData.registrosTrabajo.filter(item => 
+        item.fechaTrabajo || item.lugar || item.tipoTrabajo
+      ).length,
+      comprasRealizadas: formData.comprasRealizadas.filter(item => 
+        item.numeroTicket || item.fecha || item.nombreArticulo
+      ).length,
+      inventario: formData.inventario.filter(item => 
+        item.nombreArticulo || item.cantidad
+      ).length
+    }
+    
+    return counts.peticionesCompra + counts.registrosTrabajo + 
+           counts.comprasRealizadas + counts.inventario
+  }
+
   const generatePDF = () => {
     const doc = new jsPDF()
     let pageNumber = 1
@@ -392,12 +416,46 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
     // Guardar PDF
     const fileName = `logista_informe_${new Date().toISOString().split('T')[0]}.pdf`
     doc.save(fileName)
+    
+    // Cerrar modal
+    setShowConfirmModal(false)
   }
 
+  const handleGenerateClick = () => {
+    const totalRecords = countRecords()
+    
+    if (totalRecords === 0) {
+      // Si no hay registros, mostrar mensaje diferente
+      setShowConfirmModal(true)
+    } else {
+      setShowConfirmModal(true)
+    }
+  }
+
+  const totalRecords = countRecords()
+  const hasRecords = totalRecords > 0
+
   return (
-    <button onClick={generatePDF} className="btn btn-primary pdf-button">
-      📄 Generar PDF
-    </button>
+    <>
+      <button onClick={handleGenerateClick} className="btn btn-primary pdf-button">
+        📄 Generar PDF
+      </button>
+      
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        title={hasRecords ? "Generar PDF" : "Sin datos para generar PDF"}
+        message={
+          hasRecords 
+            ? `Se va a generar un PDF con ${totalRecords} registro${totalRecords !== 1 ? 's' : ''} añadido${totalRecords !== 1 ? 's' : ''}. ¿Deseas continuar?`
+            : "Complete algún campo antes de generar el PDF."
+        }
+        confirmText={hasRecords ? "Generar PDF" : "Entendido"}
+        cancelText={hasRecords ? "Cancelar" : undefined}
+        onConfirm={hasRecords ? generatePDF : () => setShowConfirmModal(false)}
+        onCancel={() => setShowConfirmModal(false)}
+        isDanger={false}
+      />
+    </>
   )
 }
 
