@@ -34,7 +34,8 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
         item.fechaTrabajo || item.lugar || item.tipoTrabajo
       ),
       comprasRealizadas: formData.comprasRealizadas.some(item => 
-        item.numeroTicket || item.fecha || item.nombreArticulo
+        item.numeroTicket || item.fecha || item.fotoTicket ||
+        item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
       ),
       inventario: formData.inventario.some(item => 
         item.nombreArticulo || item.cantidad
@@ -51,7 +52,8 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
         item.fechaTrabajo || item.lugar || item.tipoTrabajo
       ).length,
       comprasRealizadas: formData.comprasRealizadas.filter(item => 
-        item.numeroTicket || item.fecha || item.nombreArticulo
+        item.numeroTicket || item.fecha || item.fotoTicket ||
+        item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
       ).length,
       inventario: formData.inventario.filter(item => 
         item.nombreArticulo || item.cantidad
@@ -133,7 +135,8 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
         item.fechaTrabajo || item.lugar || item.tipoTrabajo
       ),
       comprasRealizadas: sections.comprasRealizadas && formData.comprasRealizadas.some(item => 
-        item.numeroTicket || item.fecha || item.nombreArticulo
+        item.numeroTicket || item.fecha || item.fotoTicket ||
+        item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
       ),
       inventario: sections.inventario && formData.inventario.some(item => 
         item.nombreArticulo || item.cantidad
@@ -280,96 +283,184 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.line(20, yPosition, 190, yPosition)
       yPosition += 8
       
-      // Encabezado de tabla con estilo moderno
-      doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
-      doc.roundedRect(20, yPosition, 170, 9, 2, 2, 'F')
-      
-      doc.setFontSize(9)
-      doc.setTextColor(255, 255, 255)
-      doc.setFont('helvetica', 'bold')
-      doc.text('#', 25, yPosition + 6)
-      doc.text('Ticket', 35, yPosition + 6)
-      doc.text('Fecha', 65, yPosition + 6)
-      doc.text('Artículo', 95, yPosition + 6)
-      doc.text('Cant.', 140, yPosition + 6)
-      doc.text('P/u', 160, yPosition + 6)
-      doc.text('Total', 178, yPosition + 6)
-      yPosition += 9
-      
       let totalGeneral = 0
-      let alternate = false
+      let ticketCounter = 1
       
-      // Filas de datos con estilo mejorado
-      let contador = 1
-      formData.comprasRealizadas.forEach((item) => {
-        if (item.numeroTicket || item.fecha || item.nombreArticulo) {
-          yPosition = checkNewPage(10)
+      // Recorrer cada ticket
+      formData.comprasRealizadas.forEach((ticket) => {
+        const hasData = ticket.numeroTicket || ticket.fecha || 
+                       ticket.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
+        
+        if (hasData) {
+          // Verificar espacio para el ticket
+          yPosition = checkNewPage(30)
           
-          // Fondo alternado con bordes redondeados
-          if (alternate) {
-            doc.setFillColor(250, 251, 252)
-            doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
-          } else {
-            doc.setFillColor(255, 255, 255)
-            doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
-          }
+          // Encabezado del ticket
+          doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
+          doc.roundedRect(20, yPosition, 170, 8, 2, 2, 'F')
           
-          doc.setFontSize(8)
-          doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b)
-          doc.setFont('helvetica', 'normal')
-          doc.text(`${contador}`, 25, yPosition + 5)
-          doc.text(item.numeroTicket || '-', 35, yPosition + 5)
-          
-          if (item.fecha) {
-            const fecha = new Date(item.fecha + 'T00:00:00').toLocaleDateString('es-ES')
-            doc.text(fecha, 65, yPosition + 5)
-          } else {
-            doc.text('-', 65, yPosition + 5)
-          }
-          
-          const articulo = item.nombreArticulo || '-'
-          const articuloCorto = articulo.length > 20 ? articulo.substring(0, 17) + '...' : articulo
-          doc.text(articuloCorto, 95, yPosition + 5)
-          
-          doc.text(item.cantidad || '0', 140, yPosition + 5)
-          doc.text(`${parseFloat(item.precioUnidad || '0').toFixed(2)}€`, 160, yPosition + 5)
-          
+          doc.setFontSize(10)
+          doc.setTextColor(255, 255, 255)
           doc.setFont('helvetica', 'bold')
-          doc.setTextColor(successColor.r, successColor.g, successColor.b)
-          const totalValue = parseFloat(item.total || '0')
-          doc.text(`${totalValue.toFixed(2)}€`, 178, yPosition + 5)
+          doc.text(`Ticket #${ticketCounter}`, 25, yPosition + 5.5)
           
-          totalGeneral += totalValue
+          if (ticket.numeroTicket) {
+            doc.text(`Nº: ${ticket.numeroTicket}`, 70, yPosition + 5.5)
+          }
           
-          yPosition += 7
-          alternate = !alternate
-          contador++
+          if (ticket.fecha) {
+            const fecha = new Date(ticket.fecha + 'T00:00:00').toLocaleDateString('es-ES')
+            doc.text(`Fecha: ${fecha}`, 135, yPosition + 5.5)
+          }
+          
+          yPosition += 10
+          
+          // Tabla de artículos
+          if (ticket.articulos && ticket.articulos.length > 0) {
+            // Encabezado de artículos
+            doc.setFillColor(245, 247, 250)
+            doc.rect(20, yPosition, 170, 7, 'F')
+            
+            doc.setFontSize(8)
+            doc.setTextColor(100, 100, 100)
+            doc.setFont('helvetica', 'bold')
+            doc.text('Artículo', 25, yPosition + 4.5)
+            doc.text('Cant.', 115, yPosition + 4.5)
+            doc.text('P/u', 140, yPosition + 4.5)
+            doc.text('Total', 170, yPosition + 4.5)
+            yPosition += 7
+            
+            let totalTicket = 0
+            let alternate = false
+            
+            ticket.articulos.forEach((articulo) => {
+              if (articulo.nombreArticulo || articulo.cantidad || articulo.total) {
+                yPosition = checkNewPage(8)
+                
+                // Fondo alternado
+                if (alternate) {
+                  doc.setFillColor(250, 251, 252)
+                  doc.rect(20, yPosition, 170, 6, 'F')
+                }
+                
+                doc.setFontSize(8)
+                doc.setTextColor(60, 60, 60)
+                doc.setFont('helvetica', 'normal')
+                
+                const articuloNombre = articulo.nombreArticulo || '-'
+                const articuloCorto = articuloNombre.length > 35 ? articuloNombre.substring(0, 32) + '...' : articuloNombre
+                doc.text(articuloCorto, 25, yPosition + 4)
+                
+                doc.text(articulo.cantidad || '0', 115, yPosition + 4)
+                doc.text(`${parseFloat(articulo.precioUnidad || '0').toFixed(2)}€`, 140, yPosition + 4)
+                
+                const totalArticulo = parseFloat(articulo.total || '0')
+                doc.setFont('helvetica', 'bold')
+                doc.text(`${totalArticulo.toFixed(2)}€`, 170, yPosition + 4)
+                
+                totalTicket += totalArticulo
+                
+                yPosition += 6
+                alternate = !alternate
+              }
+            })
+            
+            // Total del ticket
+            if (totalTicket > 0) {
+              yPosition = checkNewPage(10)
+              
+              doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b)
+              doc.setLineWidth(0.5)
+              doc.line(115, yPosition, 190, yPosition)
+              yPosition += 5
+              
+              doc.setFillColor(successColor.r, successColor.g, successColor.b)
+              doc.roundedRect(115, yPosition - 3, 75, 7, 1.5, 1.5, 'F')
+              
+              doc.setFontSize(9)
+              doc.setFont('helvetica', 'bold')
+              doc.setTextColor(255, 255, 255)
+              doc.text('Total Ticket:', 120, yPosition + 1.5)
+              doc.text(`${totalTicket.toFixed(2)}€`, 185, yPosition + 1.5, { align: 'right' })
+              
+              totalGeneral += totalTicket
+              yPosition += 7
+            }
+          }
+          
+          yPosition += 8
+          ticketCounter++
         }
       })
       
-      // Total general con estilo moderno
+      // Total general de todas las compras
       if (totalGeneral > 0) {
-        yPosition = checkNewPage(12)
+        yPosition = checkNewPage(15)
         
-        // Línea separadora con gradiente visual
         doc.setDrawColor(primaryColor.r, primaryColor.g, primaryColor.b)
-        doc.setLineWidth(1)
-        doc.line(140, yPosition, 190, yPosition)
-        yPosition += 6
+        doc.setLineWidth(1.5)
+        doc.line(20, yPosition, 190, yPosition)
+        yPosition += 7
         
-        // Fondo para el total con bordes redondeados
         doc.setFillColor(successColor.r, successColor.g, successColor.b)
-        doc.roundedRect(140, yPosition - 4, 50, 9, 2, 2, 'F')
+        doc.roundedRect(20, yPosition - 4, 170, 10, 2, 2, 'F')
         
-        doc.setFontSize(11)
+        doc.setFontSize(12)
         doc.setFont('helvetica', 'bold')
         doc.setTextColor(255, 255, 255)
-        doc.text('TOTAL:', 145, yPosition + 2)
+        doc.text('TOTAL GENERAL:', 25, yPosition + 2)
+        doc.setFontSize(14)
         doc.text(`${totalGeneral.toFixed(2)}€`, 185, yPosition + 2, { align: 'right' })
-        yPosition += 10
+        yPosition += 12
       }
       
-      yPosition += 15 // Mayor separación entre tablas
+      // Sección de fotos de tickets al final
+      const ticketsConFoto = formData.comprasRealizadas.filter(t => t.fotoTicket)
+      if (ticketsConFoto.length > 0) {
+        yPosition = checkNewPage(30)
+        
+        doc.setFontSize(14)
+        doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b)
+        doc.setFont('helvetica', 'bold')
+        doc.text('Fotos de Tickets', 20, yPosition)
+        yPosition += 2
+        
+        doc.setDrawColor(accentColor.r, accentColor.g, accentColor.b)
+        doc.setLineWidth(0.8)
+        doc.line(20, yPosition, 190, yPosition)
+        yPosition += 8
+        
+        ticketsConFoto.forEach((ticket, index) => {
+          // Verificar si necesitamos nueva página (80mm para la imagen + margen)
+          yPosition = checkNewPage(90)
+          
+          // Título de la foto
+          doc.setFontSize(10)
+          doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b)
+          doc.setFont('helvetica', 'bold')
+          const tituloFoto = ticket.numeroTicket 
+            ? `Foto Ticket: ${ticket.numeroTicket}`
+            : `Foto Ticket ${index + 1}`
+          doc.text(tituloFoto, 20, yPosition)
+          yPosition += 5
+          
+          // Añadir imagen
+          try {
+            // Calcular dimensiones para mantener aspecto y caber en la página
+            const maxWidth = 170
+            const maxHeight = 80
+            doc.addImage(ticket.fotoTicket, 'JPEG', 20, yPosition, maxWidth, maxHeight)
+            yPosition += maxHeight + 10
+          } catch (error) {
+            doc.setFontSize(8)
+            doc.setTextColor(200, 0, 0)
+            doc.text('Error al cargar la imagen', 20, yPosition)
+            yPosition += 10
+          }
+        })
+      }
+      
+      yPosition += 10
     }
     
     // INVENTARIO

@@ -11,14 +11,20 @@ export interface RegistroTrabajo {
   tipoTrabajo: string
 }
 
-export interface CompraRealizada {
+export interface ArticuloCompra {
   id: string
-  numeroTicket: string
-  fecha: string
   nombreArticulo: string
   cantidad: string
   precioUnidad: string
   total: string
+}
+
+export interface CompraRealizada {
+  id: string
+  numeroTicket: string
+  fecha: string
+  fotoTicket: string // Base64 de la imagen
+  articulos: ArticuloCompra[]
 }
 
 export interface ItemInventario {

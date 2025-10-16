@@ -15,7 +15,13 @@ interface FormStore {
 const initialData: FormData = {
   peticionesCompra: [{ id: '1', nombreArticulo: '', cantidad: '' }],
   registrosTrabajo: [{ id: '1', fechaTrabajo: '', lugar: '', tipoTrabajo: '' }],
-  comprasRealizadas: [{ id: '1', numeroTicket: '', fecha: '', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }],
+  comprasRealizadas: [{ 
+    id: '1', 
+    numeroTicket: '', 
+    fecha: '', 
+    fotoTicket: '',
+    articulos: [{ id: '1', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }]
+  }],
   inventario: [{ id: '1', nombreArticulo: '', cantidad: '', prenda: '', estado: '' }]
 }
 
@@ -36,7 +42,13 @@ export const useFormStore = create<FormStore>()(
         const defaultValues = {
           peticionesCompra: [{ id: '1', nombreArticulo: '', cantidad: '' }],
           registrosTrabajo: [{ id: '1', fechaTrabajo: '', lugar: '', tipoTrabajo: '' }],
-          comprasRealizadas: [{ id: '1', numeroTicket: '', fecha: '', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }],
+          comprasRealizadas: [{ 
+            id: '1', 
+            numeroTicket: '', 
+            fecha: '', 
+            fotoTicket: '',
+            articulos: [{ id: '1', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }]
+          }],
           inventario: [{ id: '1', nombreArticulo: '', cantidad: '', prenda: '', estado: '' }]
         }
         

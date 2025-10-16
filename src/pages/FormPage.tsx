@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import TabNavigation from '../components/TabNavigation'
 import TableView from '../components/TableView'
+import ComprasView from '../components/ComprasView'
 import PDFGenerator from '../components/PDFGenerator'
 import OptionsMenu from '../components/OptionsMenu'
 import { ConfirmModal, ImportModal, ExportModal, SuccessModal } from '../components/Modal'
@@ -84,7 +85,13 @@ const FormPage = () => {
         updateFormData(key, [{ id: newId, fechaTrabajo: '', lugar: '', tipoTrabajo: '' }, ...formData.registrosTrabajo])
         break
       case 'comprasRealizadas':
-        updateFormData(key, [{ id: newId, numeroTicket: '', fecha: '', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }, ...formData.comprasRealizadas])
+        updateFormData(key, [{ 
+          id: newId, 
+          numeroTicket: '', 
+          fecha: '', 
+          fotoTicket: '',
+          articulos: [{ id: '1', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }]
+        }, ...formData.comprasRealizadas])
         break
       case 'inventario':
         updateFormData(key, [{ id: newId, nombreArticulo: '', cantidad: '', prenda: '', estado: '' }, ...formData.inventario])
@@ -142,14 +149,7 @@ const FormPage = () => {
       case 'comprasRealizadas':
         updateFormData(key, formData.comprasRealizadas.map(item => {
           if (item.id === rowId) {
-            const updatedItem = { ...item, [field]: value }
-            // Auto-calcular precio/u si cambia total o cantidad
-            if (field === 'cantidad' || field === 'total') {
-              const cantidad = parseFloat(field === 'cantidad' ? value : updatedItem.cantidad) || 0
-              const total = parseFloat(field === 'total' ? value : updatedItem.total.toString()) || 0
-              updatedItem.precioUnidad = cantidad > 0 ? (total / cantidad).toFixed(2) : '0.00'
-            }
-            return updatedItem
+            return { ...item, [field]: value }
           }
           return item
         }))
@@ -196,14 +196,24 @@ const FormPage = () => {
         />
 
         <div className="tab-content">
-          <TableView
-            tabId={activeTab}
-            data={getCurrentData()}
-            onAddRow={() => handleAddRow(activeTab)}
-            onDeleteRow={(rowId) => handleDeleteRow(activeTab, rowId)}
-            onUpdateRow={(rowId, field, value) => handleUpdateRow(activeTab, rowId, field, value)}
-            onClearTab={handleClearTab}
-          />
+          {activeTab === 'comprasRealizadas' ? (
+            <ComprasView
+              data={formData.comprasRealizadas}
+              onAddRow={() => handleAddRow(activeTab)}
+              onDeleteRow={(rowId: string) => handleDeleteRow(activeTab, rowId)}
+              onUpdateRow={(rowId: string, field: string, value: any) => handleUpdateRow(activeTab, rowId, field, value)}
+              onClearTab={handleClearTab}
+            />
+          ) : (
+            <TableView
+              tabId={activeTab}
+              data={getCurrentData()}
+              onAddRow={() => handleAddRow(activeTab)}
+              onDeleteRow={(rowId: string) => handleDeleteRow(activeTab, rowId)}
+              onUpdateRow={(rowId: string, field: string, value: any) => handleUpdateRow(activeTab, rowId, field, value)}
+              onClearTab={handleClearTab}
+            />
+          )}
         </div>
 
         <div className="footer-actions">
