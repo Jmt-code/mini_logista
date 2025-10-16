@@ -8,8 +8,39 @@ interface PDFGeneratorProps {
   formData: FormData
 }
 
+interface SectionAvailability {
+  peticionCompras: boolean
+  registroTrabajo: boolean
+  comprasRealizadas: boolean
+  inventario: boolean
+}
+
 const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [showSelectionModal, setShowSelectionModal] = useState(false)
+  const [selectedSections, setSelectedSections] = useState<SectionAvailability>({
+    peticionCompras: true,
+    registroTrabajo: true,
+    comprasRealizadas: true,
+    inventario: true
+  })
+
+  const getAvailableSections = (): SectionAvailability => {
+    return {
+      peticionCompras: formData.peticionesCompra.some(item => 
+        item.nombreArticulo || item.cantidad
+      ),
+      registroTrabajo: formData.registrosTrabajo.some(item => 
+        item.fechaTrabajo || item.lugar || item.tipoTrabajo
+      ),
+      comprasRealizadas: formData.comprasRealizadas.some(item => 
+        item.numeroTicket || item.fecha || item.nombreArticulo
+      ),
+      inventario: formData.inventario.some(item => 
+        item.nombreArticulo || item.cantidad
+      )
+    }
+  }
 
   const countRecords = () => {
     const counts = {
@@ -31,7 +62,7 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
            counts.comprasRealizadas + counts.inventario
   }
 
-  const generatePDF = () => {
+  const generatePDF = (sections: SectionAvailability = selectedSections) => {
     const doc = new jsPDF()
     let pageNumber = 1
     const pageHeight = 297 // A4 height in mm
@@ -93,18 +124,18 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
     
     let yPosition = marginTop + 18
     
-    // Filtrar datos con contenido
+    // Filtrar datos con contenido y verificar si están seleccionadas
     const hasContent = {
-      peticionCompras: formData.peticionesCompra.some(item => 
+      peticionCompras: sections.peticionCompras && formData.peticionesCompra.some(item => 
         item.nombreArticulo || item.cantidad
       ),
-      registroTrabajo: formData.registrosTrabajo.some(item => 
+      registroTrabajo: sections.registroTrabajo && formData.registrosTrabajo.some(item => 
         item.fechaTrabajo || item.lugar || item.tipoTrabajo
       ),
-      comprasRealizadas: formData.comprasRealizadas.some(item => 
+      comprasRealizadas: sections.comprasRealizadas && formData.comprasRealizadas.some(item => 
         item.numeroTicket || item.fecha || item.nombreArticulo
       ),
-      inventario: formData.inventario.some(item => 
+      inventario: sections.inventario && formData.inventario.some(item => 
         item.nombreArticulo || item.cantidad
       )
     }
@@ -417,23 +448,58 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
     const fileName = `logista_informe_${new Date().toISOString().split('T')[0]}.pdf`
     doc.save(fileName)
     
-    // Cerrar modal
+    // Cerrar modales
     setShowConfirmModal(false)
+    setShowSelectionModal(false)
   }
 
   const handleGenerateClick = () => {
     const totalRecords = countRecords()
     
     if (totalRecords === 0) {
-      // Si no hay registros, mostrar mensaje diferente
+      // Si no hay registros, mostrar mensaje de error
       setShowConfirmModal(true)
     } else {
-      setShowConfirmModal(true)
+      // Si hay registros, mostrar modal de selección
+      const available = getAvailableSections()
+      setSelectedSections(available) // Seleccionar todas las disponibles por defecto
+      setShowSelectionModal(true)
     }
   }
 
-  const totalRecords = countRecords()
-  const hasRecords = totalRecords > 0
+  const handleSelectAll = () => {
+    const available = getAvailableSections()
+    setSelectedSections(available)
+  }
+
+  const handleToggleSection = (section: keyof SectionAvailability) => {
+    const available = getAvailableSections()
+    if (available[section]) {
+      setSelectedSections(prev => ({
+        ...prev,
+        [section]: !prev[section]
+      }))
+    }
+  }
+
+  const hasAnySelected = () => {
+    return selectedSections.peticionCompras || 
+           selectedSections.registroTrabajo || 
+           selectedSections.comprasRealizadas || 
+           selectedSections.inventario
+  }
+
+  const getSectionLabel = (section: keyof SectionAvailability): string => {
+    const labels = {
+      peticionCompras: 'Petición de Compras',
+      registroTrabajo: 'Registro de Trabajo',
+      comprasRealizadas: 'Compras Realizadas',
+      inventario: 'Inventario'
+    }
+    return labels[section]
+  }
+
+  const availableSections = getAvailableSections()
 
   return (
     <>
@@ -441,20 +507,77 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
         📄 Generar PDF
       </button>
       
+      {/* Modal de error cuando no hay datos */}
       <ConfirmModal
         isOpen={showConfirmModal}
-        title={hasRecords ? "Generar PDF" : "Sin datos para generar PDF"}
-        message={
-          hasRecords 
-            ? `Se va a generar un PDF con ${totalRecords} registro${totalRecords !== 1 ? 's' : ''} añadido${totalRecords !== 1 ? 's' : ''}. ¿Deseas continuar?`
-            : "Complete algún campo antes de generar el PDF."
-        }
-        confirmText={hasRecords ? "Generar PDF" : "Entendido"}
-        cancelText={hasRecords ? "Cancelar" : undefined}
-        onConfirm={hasRecords ? generatePDF : () => setShowConfirmModal(false)}
+        title="Sin datos para generar PDF"
+        message="Complete algún campo antes de generar el PDF."
+        confirmText="Entendido"
+        onConfirm={() => setShowConfirmModal(false)}
         onCancel={() => setShowConfirmModal(false)}
         isDanger={false}
       />
+      
+      {/* Modal de selección de secciones */}
+      {showSelectionModal && (
+        <div className="modal-overlay" onClick={() => setShowSelectionModal(false)}>
+          <div className="modal-content pdf-selection-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 className="modal-title">Seleccionar secciones para el PDF</h2>
+            <p className="modal-message">
+              Selecciona las secciones que deseas incluir en el PDF:
+            </p>
+            
+            <div className="sections-list">
+              {(Object.keys(availableSections) as Array<keyof SectionAvailability>).map((section) => {
+                const isAvailable = availableSections[section]
+                const isSelected = selectedSections[section]
+                
+                return (
+                  <label 
+                    key={section}
+                    className={`section-checkbox ${!isAvailable ? 'disabled' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      disabled={!isAvailable}
+                      onChange={() => handleToggleSection(section)}
+                    />
+                    <span className="checkbox-label">
+                      {getSectionLabel(section)}
+                      {!isAvailable && <span className="no-data-badge">Sin datos</span>}
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+            
+            <div className="modal-actions">
+              <button 
+                className="btn-secondary select-all-btn"
+                onClick={handleSelectAll}
+              >
+                Seleccionar todas
+              </button>
+              <div className="action-buttons">
+                <button 
+                  className="btn-cancel"
+                  onClick={() => setShowSelectionModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="btn-confirm"
+                  onClick={() => generatePDF(selectedSections)}
+                  disabled={!hasAnySelected()}
+                >
+                  Generar PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
