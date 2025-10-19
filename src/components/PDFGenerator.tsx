@@ -547,6 +547,13 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
 
       if (!pisoHasData) return
 
+      // Add page break between floors (except for the first one)
+      if (pisoIndex > 0) {
+        doc.addPage()
+        yPosition = marginTop + 18
+        pageNumber++
+      }
+
       // Add floor header
       if (pisoIndex > 0 || appData.pisos.length > 1) {
         yPosition = checkNewPage(30)
