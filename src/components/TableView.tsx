@@ -322,9 +322,9 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab
       
       <ConfirmModal
         isOpen={clearTabConfirm}
-        title={`Borrar todos los datos de ${getTabName()}`}
-        message={`¿Estás seguro de que quieres borrar todos los datos de ${getTabName()}? Esta acción no se puede deshacer.`}
-        confirmText="Borrar todo"
+        title={`⚠️ Borrar todos los datos de ${getTabName()}`}
+        message={`CUIDADO: Se eliminarán TODOS LOS DATOS de ${getTabName()}. Esta acción es IRREVERSIBLE y no se podrá recuperar la información borrada.`}
+        confirmText="Borrar Todo"
         cancelText="Cancelar"
         onConfirm={() => {
           onClearTab()

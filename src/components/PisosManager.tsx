@@ -157,9 +157,9 @@ const PisosManager = ({
 
         <ConfirmModal
           isOpen={showDeleteConfirm !== null}
-          title="Eliminar Piso"
-          message="¿Estás seguro de que quieres eliminar este piso? Se perderán todos los datos asociados. Esta acción no se puede deshacer."
-          confirmText="Eliminar"
+          title="⚠️ Eliminar Piso"
+          message="CUIDADO: Se eliminarán TODOS los datos de este piso (peticiones de compra, registros de trabajo, compras realizadas e inventario). Esta acción es IRREVERSIBLE y no se podrá recuperar la información."
+          confirmText="Eliminar Piso"
           cancelText="Cancelar"
           onConfirm={handleConfirmDelete}
           onCancel={() => setShowDeleteConfirm(null)}

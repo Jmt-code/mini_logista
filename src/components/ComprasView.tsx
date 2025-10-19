@@ -309,9 +309,9 @@ const ComprasView = ({ data, onAddRow, onDeleteRow, onUpdateRow, onClearTab }: C
       
       <ConfirmModal
         isOpen={clearTabConfirm}
-        title="Borrar todos los datos de Compras Realizadas"
-        message="¿Estás seguro de que quieres borrar todos los datos de Compras Realizadas? Esta acción no se puede deshacer."
-        confirmText="Borrar todo"
+        title="⚠️ Borrar todos los datos de Compras Realizadas"
+        message="CUIDADO: Se eliminarán TODOS LOS DATOS de Compras Realizadas (tickets, artículos y fotos). Esta acción es IRREVERSIBLE y no se podrá recuperar la información borrada."
+        confirmText="Borrar Todo"
         cancelText="Cancelar"
         onConfirm={() => {
           onClearTab()
