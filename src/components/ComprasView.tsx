@@ -52,7 +52,7 @@ const ComprasView = ({ data, onAddRow, onDeleteRow, onUpdateRow, onClearTab }: C
         precioUnidad: '0.00',
         total: ''
       }
-      const updatedArticulos = [...(ticket.articulos || []), newArticulo]
+      const updatedArticulos = [newArticulo, ...(ticket.articulos || [])]
       onUpdateRow(ticketId, 'articulos', updatedArticulos)
     }
   }
@@ -222,7 +222,7 @@ const ComprasView = ({ data, onAddRow, onDeleteRow, onUpdateRow, onClearTab }: C
                       {ticket.articulos?.map((articulo, artIndex) => (
                         <div key={articulo.id} className="articulo-item">
                           <div className="articulo-header">
-                            <span className="articulo-number">Art. {artIndex + 1}</span>
+                            <span className="articulo-number">Art. {ticket.articulos!.length - artIndex}</span>
                             {ticket.articulos!.length > 1 && (
                               <button
                                 className="delete-articulo-btn"

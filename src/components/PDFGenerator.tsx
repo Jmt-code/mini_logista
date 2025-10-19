@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { jsPDF } from 'jspdf'
 import { ConfirmModal } from './Modal'
-import { FormData } from '../types/FormTypes'
+import { AppData, FormData } from '../types/FormTypes'
 import './PDFGenerator.css'
 
 interface PDFGeneratorProps {
-  formData: FormData
+  appData: AppData
 }
 
 interface SectionAvailability {
@@ -15,7 +15,7 @@ interface SectionAvailability {
   inventario: boolean
 }
 
-const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
+const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showSelectionModal, setShowSelectionModal] = useState(false)
   const [selectedSections, setSelectedSections] = useState<SectionAvailability>({
@@ -26,42 +26,54 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
   })
 
   const getAvailableSections = (): SectionAvailability => {
+    // Check if any floor has data in each section
+    const hasSomeData = (checkFn: (formData: FormData) => boolean) => {
+      return appData.pisos.some(piso => checkFn(piso.formData))
+    }
+
     return {
-      peticionCompras: formData.peticionesCompra.some(item => 
+      peticionCompras: hasSomeData(fd => fd.peticionesCompra.some(item => 
         item.nombreArticulo || item.cantidad
-      ),
-      registroTrabajo: formData.registrosTrabajo.some(item => 
+      )),
+      registroTrabajo: hasSomeData(fd => fd.registrosTrabajo.some(item => 
         item.fechaTrabajo || item.lugar || item.tipoTrabajo
-      ),
-      comprasRealizadas: formData.comprasRealizadas.some(item => 
+      )),
+      comprasRealizadas: hasSomeData(fd => fd.comprasRealizadas.some(item => 
         item.numeroTicket || item.fecha || item.fotoTicket ||
         item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
-      ),
-      inventario: formData.inventario.some(item => 
+      )),
+      inventario: hasSomeData(fd => fd.inventario.some(item => 
         item.nombreArticulo || item.cantidad
-      )
+      ))
     }
   }
 
   const countRecords = () => {
-    const counts = {
-      peticionesCompra: formData.peticionesCompra.filter(item => 
-        item.nombreArticulo || item.cantidad
-      ).length,
-      registrosTrabajo: formData.registrosTrabajo.filter(item => 
-        item.fechaTrabajo || item.lugar || item.tipoTrabajo
-      ).length,
-      comprasRealizadas: formData.comprasRealizadas.filter(item => 
-        item.numeroTicket || item.fecha || item.fotoTicket ||
-        item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
-      ).length,
-      inventario: formData.inventario.filter(item => 
-        item.nombreArticulo || item.cantidad
-      ).length
-    }
+    let total = 0
     
-    return counts.peticionesCompra + counts.registrosTrabajo + 
-           counts.comprasRealizadas + counts.inventario
+    appData.pisos.forEach(piso => {
+      const formData = piso.formData
+      const counts = {
+        peticionesCompra: formData.peticionesCompra.filter(item => 
+          item.nombreArticulo || item.cantidad
+        ).length,
+        registrosTrabajo: formData.registrosTrabajo.filter(item => 
+          item.fechaTrabajo || item.lugar || item.tipoTrabajo
+        ).length,
+        comprasRealizadas: formData.comprasRealizadas.filter(item => 
+          item.numeroTicket || item.fecha || item.fotoTicket ||
+          item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
+        ).length,
+        inventario: formData.inventario.filter(item => 
+          item.nombreArticulo || item.cantidad
+        ).length
+      }
+      
+      total += counts.peticionesCompra + counts.registrosTrabajo + 
+               counts.comprasRealizadas + counts.inventario
+    })
+    
+    return total
   }
 
   const generatePDF = (sections: SectionAvailability = selectedSections) => {
@@ -75,7 +87,8 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
     const primaryColor = { r: 102, g: 126, b: 234 } // #667eea
     const accentColor = { r: 118, g: 75, b: 162 } // #764ba2
     const successColor = { r: 17, g: 153, b: 142 } // #11998e
-    //const headerBg = { r: 248, g: 249, b: 250 } // #f8f9fa
+    
+    let yPosition = marginTop + 18
     
     // Función para añadir header y footer en cada página
     const addHeaderFooter = (pageNum: number, totalPages: number) => {
@@ -123,28 +136,12 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       }
       return yPosition
     }
-    
-    let yPosition = marginTop + 18
-    
-    // Filtrar datos con contenido y verificar si están seleccionadas
-    const hasContent = {
-      peticionCompras: sections.peticionCompras && formData.peticionesCompra.some(item => 
-        item.nombreArticulo || item.cantidad
-      ),
-      registroTrabajo: sections.registroTrabajo && formData.registrosTrabajo.some(item => 
-        item.fechaTrabajo || item.lugar || item.tipoTrabajo
-      ),
-      comprasRealizadas: sections.comprasRealizadas && formData.comprasRealizadas.some(item => 
-        item.numeroTicket || item.fecha || item.fotoTicket ||
-        item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
-      ),
-      inventario: sections.inventario && formData.inventario.some(item => 
-        item.nombreArticulo || item.cantidad
-      )
-    }
-    
-    // PETICIÓN DE COMPRAS
-    if (hasContent.peticionCompras) {
+
+    // Render functions for each section
+    const renderPeticionCompras = (formData: FormData) => {
+      const hasData = formData.peticionesCompra.some(item => item.nombreArticulo || item.cantidad)
+      if (!hasData) return
+
       yPosition = checkNewPage(40)
       
       doc.setFontSize(14)
@@ -158,7 +155,7 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.line(20, yPosition, 190, yPosition)
       yPosition += 8
       
-      // Encabezado de tabla con estilo moderno
+      // Encabezado de tabla
       doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
       doc.roundedRect(20, yPosition, 170, 9, 2, 2, 'F')
       
@@ -170,14 +167,13 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.text('Cantidad', 160, yPosition + 6)
       yPosition += 9
       
-      // Filas de datos con estilo mejorado
+      // Filas
       let alternate = false
       let contador = 1
       formData.peticionesCompra.forEach((item) => {
         if (item.nombreArticulo || item.cantidad) {
           yPosition = checkNewPage(10)
           
-          // Fondo alternado con bordes redondeados
           if (alternate) {
             doc.setFillColor(250, 251, 252)
             doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
@@ -199,11 +195,13 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
         }
       })
       
-      yPosition += 15 // Mayor separación entre tablas
+      yPosition += 15
     }
-    
-    // REGISTRO DE TRABAJO
-    if (hasContent.registroTrabajo) {
+
+    const renderRegistroTrabajo = (formData: FormData) => {
+      const hasData = formData.registrosTrabajo.some(item => item.fechaTrabajo || item.lugar || item.tipoTrabajo)
+      if (!hasData) return
+
       yPosition = checkNewPage(40)
       
       doc.setFontSize(14)
@@ -217,7 +215,7 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.line(20, yPosition, 190, yPosition)
       yPosition += 8
       
-      // Encabezado de tabla con estilo moderno
+      // Encabezado de tabla
       doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
       doc.roundedRect(20, yPosition, 170, 9, 2, 2, 'F')
       
@@ -230,14 +228,13 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.text('Tipo de Trabajo', 135, yPosition + 6)
       yPosition += 9
       
-      // Filas de datos con estilo mejorado
+      // Filas
       let alternate = false
       let contador = 1
       formData.registrosTrabajo.forEach((item) => {
         if (item.fechaTrabajo || item.lugar || item.tipoTrabajo) {
           yPosition = checkNewPage(10)
           
-          // Fondo alternado con bordes redondeados
           if (alternate) {
             doc.setFillColor(250, 251, 252)
             doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
@@ -265,11 +262,16 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
         }
       })
       
-      yPosition += 15 // Mayor separación entre tablas
+      yPosition += 15
     }
-    
-    // COMPRAS REALIZADAS
-    if (hasContent.comprasRealizadas) {
+
+    const renderComprasRealizadas = (formData: FormData) => {
+      const hasData = formData.comprasRealizadas.some(item => 
+        item.numeroTicket || item.fecha || item.fotoTicket ||
+        item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
+      )
+      if (!hasData) return
+
       yPosition = checkNewPage(40)
       
       doc.setFontSize(14)
@@ -286,13 +288,11 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       let totalGeneral = 0
       let ticketCounter = 1
       
-      // Recorrer cada ticket
       formData.comprasRealizadas.forEach((ticket) => {
         const hasData = ticket.numeroTicket || ticket.fecha || 
                        ticket.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
         
         if (hasData) {
-          // Verificar espacio para el ticket
           yPosition = checkNewPage(30)
           
           // Encabezado del ticket
@@ -317,7 +317,6 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
           
           // Tabla de artículos
           if (ticket.articulos && ticket.articulos.length > 0) {
-            // Encabezado de artículos
             doc.setFillColor(245, 247, 250)
             doc.rect(20, yPosition, 170, 7, 'F')
             
@@ -337,7 +336,6 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
               if (articulo.nombreArticulo || articulo.cantidad || articulo.total) {
                 yPosition = checkNewPage(8)
                 
-                // Fondo alternado
                 if (alternate) {
                   doc.setFillColor(250, 251, 252)
                   doc.rect(20, yPosition, 170, 6, 'F')
@@ -414,7 +412,7 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
         yPosition += 12
       }
       
-      // Sección de fotos de tickets al final
+      // Fotos de tickets
       const ticketsConFoto = formData.comprasRealizadas.filter(t => t.fotoTicket)
       if (ticketsConFoto.length > 0) {
         yPosition = checkNewPage(30)
@@ -431,10 +429,8 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
         yPosition += 8
         
         ticketsConFoto.forEach((ticket, index) => {
-          // Verificar si necesitamos nueva página (80mm para la imagen + margen)
           yPosition = checkNewPage(90)
           
-          // Título de la foto
           doc.setFontSize(10)
           doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b)
           doc.setFont('helvetica', 'bold')
@@ -444,12 +440,10 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
           doc.text(tituloFoto, 20, yPosition)
           yPosition += 5
           
-          // Añadir imagen
           try {
-            // Calcular dimensiones para mantener aspecto y caber en la página
             const maxWidth = 170
             const maxHeight = 80
-            doc.addImage(ticket.fotoTicket, 'JPEG', 20, yPosition, maxWidth, maxHeight)
+            doc.addImage(ticket.fotoTicket!, 'JPEG', 20, yPosition, maxWidth, maxHeight)
             yPosition += maxHeight + 10
           } catch (error) {
             doc.setFontSize(8)
@@ -462,9 +456,11 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       
       yPosition += 10
     }
-    
-    // INVENTARIO
-    if (hasContent.inventario) {
+
+    const renderInventario = (formData: FormData) => {
+      const hasData = formData.inventario.some(item => item.nombreArticulo || item.cantidad)
+      if (!hasData) return
+
       yPosition = checkNewPage(40)
       
       doc.setFontSize(14)
@@ -478,7 +474,7 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.line(20, yPosition, 190, yPosition)
       yPosition += 8
       
-      // Encabezado de tabla con estilo moderno
+      // Encabezado de tabla
       doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
       doc.roundedRect(20, yPosition, 170, 9, 2, 2, 'F')
       
@@ -492,14 +488,13 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
       doc.text('Estado', 170, yPosition + 6)
       yPosition += 9
       
-      // Filas de datos con estilo mejorado
+      // Filas
       let alternate = false
       let contador = 1
       formData.inventario.forEach((item) => {
         if (item.nombreArticulo || item.cantidad) {
           yPosition = checkNewPage(10)
           
-          // Fondo alternado con bordes redondeados
           if (alternate) {
             doc.setFillColor(250, 251, 252)
             doc.roundedRect(20, yPosition, 170, 7, 1, 1, 'F')
@@ -527,6 +522,82 @@ const PDFGenerator = ({ formData }: PDFGeneratorProps) => {
         }
       })
     }
+
+    // Main generation logic - loop through pisos
+    appData.pisos.forEach((piso, pisoIndex) => {
+      const formData = piso.formData
+      
+      // Check if this piso has any data
+      const pisoHasData = (
+        (sections.peticionCompras && formData.peticionesCompra.some(item => item.nombreArticulo || item.cantidad)) ||
+        (sections.registroTrabajo && formData.registrosTrabajo.some(item => item.fechaTrabajo || item.lugar || item.tipoTrabajo)) ||
+        (sections.comprasRealizadas && formData.comprasRealizadas.some(item => 
+          item.numeroTicket || item.fecha || item.fotoTicket ||
+          item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
+        )) ||
+        (sections.inventario && formData.inventario.some(item => item.nombreArticulo || item.cantidad))
+      )
+
+      if (!pisoHasData) return
+
+      // Add floor header
+      if (pisoIndex > 0 || appData.pisos.length > 1) {
+        yPosition = checkNewPage(30)
+        
+        // Línea decorativa superior
+        doc.setDrawColor(118, 75, 162) // accentColor
+        doc.setLineWidth(2)
+        doc.line(20, yPosition, 190, yPosition)
+        yPosition += 5
+        
+        // Calcular altura necesaria para el texto
+        doc.setFontSize(13)
+        doc.setFont('helvetica', 'bold')
+        const maxWidth = 160 // Ancho disponible para el texto
+        const textLines = doc.splitTextToSize(piso.nombre, maxWidth)
+        const lineHeight = 6
+        const textHeight = textLines.length * lineHeight
+        const boxHeight = Math.max(textHeight + 8, 14) // Mínimo 14mm de altura
+        
+        // Dibujar el fondo
+        doc.setFillColor(245, 243, 250) // Color muy claro morado
+        doc.rect(20, yPosition, 170, boxHeight, 'F')
+        
+        // Barra lateral izquierda de color
+        doc.setFillColor(118, 75, 162) // accentColor
+        doc.rect(20, yPosition, 4, boxHeight, 'F')
+        
+        // Borde sutil
+        doc.setDrawColor(200, 195, 220)
+        doc.setLineWidth(0.5)
+        doc.rect(20, yPosition, 170, boxHeight, 'S')
+        
+        // Texto centrado verticalmente en la caja
+        const textStartY = yPosition + (boxHeight - textHeight) / 2 + 4
+        doc.setFontSize(13)
+        doc.setTextColor(118, 75, 162)
+        doc.setFont('helvetica', 'bold')
+        
+        // Dibujar cada línea del texto
+        textLines.forEach((line: string, index: number) => {
+          doc.text(line, 28, textStartY + (index * lineHeight))
+        })
+        
+        yPosition += boxHeight + 5
+        
+        // Línea decorativa inferior
+        doc.setDrawColor(118, 75, 162)
+        doc.setLineWidth(1)
+        doc.line(20, yPosition, 190, yPosition)
+        yPosition += 10
+      }
+
+      // Render each selected section for this piso
+      if (sections.peticionCompras) renderPeticionCompras(formData)
+      if (sections.registroTrabajo) renderRegistroTrabajo(formData)
+      if (sections.comprasRealizadas) renderComprasRealizadas(formData)
+      if (sections.inventario) renderInventario(formData)
+    })
     
     // Añadir headers y footers a todas las páginas
     const totalPages = pageNumber

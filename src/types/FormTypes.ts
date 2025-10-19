@@ -41,3 +41,14 @@ export interface FormData {
   comprasRealizadas: CompraRealizada[]
   inventario: ItemInventario[]
 }
+
+export interface Piso {
+  id: string
+  nombre: string
+  formData: FormData
+}
+
+export interface AppData {
+  pisos: Piso[]
+  pisoActivo: string // ID del piso activo
+}

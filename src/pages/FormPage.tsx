@@ -4,6 +4,7 @@ import TableView from '../components/TableView'
 import ComprasView from '../components/ComprasView'
 import PDFGenerator from '../components/PDFGenerator'
 import OptionsMenu from '../components/OptionsMenu'
+import PisosManager from '../components/PisosManager'
 import { ConfirmModal, ImportModal, ExportModal, SuccessModal } from '../components/Modal'
 import { useFormStore } from '../store/formStore'
 import './FormPage.css'
@@ -12,13 +13,28 @@ type TabType = 'peticionCompras' | 'registroTrabajo' | 'comprasRealizadas' | 'in
 
 const FormPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>('peticionCompras')
-  const { formData, updateFormData, clearAllData, clearTabData, exportData, importData } = useFormStore()
+  const { 
+    appData,
+    getFormData,
+    updateFormData, 
+    clearAllData, 
+    clearTabData, 
+    exportData, 
+    importData,
+    setPisoActivo,
+    addPiso,
+    deletePiso,
+    updatePisoNombre
+  } = useFormStore()
+  
+  const formData = getFormData()
   
   const [showExportModal, setShowExportModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
   const [showClearAllModal, setShowClearAllModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showErrorModal, setShowErrorModal] = useState(false)
+  const [showPisosManager, setShowPisosManager] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [exportCode, setExportCode] = useState('')
@@ -177,10 +193,22 @@ const FormPage = () => {
     }
   }
 
+  const pisoActivo = appData.pisos.find(p => p.id === appData.pisoActivo)
+
   return (
     <div className="form-page">
       <div className="form-container">
         <header className="form-header">
+          <div className="header-left">
+            <button 
+              className="pisos-button"
+              onClick={() => setShowPisosManager(true)}
+              title="Gestionar pisos"
+            >
+              <span className="pisos-icon">🏢</span>
+              <span className="pisos-text">{pisoActivo?.nombre || 'Piso 1'}</span>
+            </button>
+          </div>
           <h1 className="form-title">Maria Moran - Logista</h1>
           <OptionsMenu
             onExport={handleExport}
@@ -217,9 +245,21 @@ const FormPage = () => {
         </div>
 
         <div className="footer-actions">
-          <PDFGenerator formData={formData} />
+          <PDFGenerator appData={appData} />
         </div>
       </div>
+      
+      {showPisosManager && (
+        <PisosManager
+          pisos={appData.pisos}
+          pisoActivo={appData.pisoActivo}
+          onSelectPiso={setPisoActivo}
+          onAddPiso={addPiso}
+          onDeletePiso={deletePiso}
+          onUpdateNombre={updatePisoNombre}
+          onClose={() => setShowPisosManager(false)}
+        />
+      )}
       
       <ExportModal
         isOpen={showExportModal}
