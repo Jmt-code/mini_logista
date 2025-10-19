@@ -201,6 +201,13 @@
 .field-input-small {
   padding: 0.5rem 0.75rem;
   font-size: 0.9rem;
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+.field-input-small:focus {
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
 }
 
 .form-field-inline {

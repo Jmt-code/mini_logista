@@ -43,6 +43,19 @@ body {
 input, textarea, select {
   -webkit-user-select: text;
   user-select: text;
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #bbb !important;
+  -webkit-text-fill-color: #bbb !important;
+  opacity: 1;
 }
 
 /* Improve tap targets for mobile */

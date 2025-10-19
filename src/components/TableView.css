@@ -219,6 +219,8 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
   background-color: #f7fafc;
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
 }
 
 .field-input:focus {
@@ -227,6 +229,8 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   background-color: white;
   transform: translateY(-1px);
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
 }
 
 .field-input::placeholder {
