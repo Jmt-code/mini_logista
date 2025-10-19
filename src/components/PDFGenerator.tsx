@@ -42,9 +42,11 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
         item.numeroTicket || item.fecha || item.fotoTicket ||
         item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
       )),
-      inventario: hasSomeData(fd => fd.inventario.some(item => 
-        item.nombreArticulo || item.cantidadActual || item.cantidadAnterior
-      ))
+      inventario: hasSomeData(fd => fd.inventario.some(item => {
+        const cantidadActual = parseFloat(item.cantidadActual || '0')
+        const cantidadAnterior = parseFloat(item.cantidadAnterior || '0')
+        return item.nombreArticulo || cantidadActual > 0 || cantidadAnterior > 0
+      }))
     }
   }
 
@@ -458,7 +460,11 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
     }
 
     const renderInventario = (formData: FormData) => {
-      const hasData = formData.inventario.some(item => item.nombreArticulo || item.cantidadActual || item.cantidadAnterior)
+      const hasData = formData.inventario.some(item => {
+        const cantidadActual = parseFloat(item.cantidadActual || '0')
+        const cantidadAnterior = parseFloat(item.cantidadAnterior || '0')
+        return item.nombreArticulo || cantidadActual > 0 || cantidadAnterior > 0
+      })
       if (!hasData) return
 
       yPosition = checkNewPage(40)
@@ -493,7 +499,13 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
       let alternate = false
       let contador = 1
       formData.inventario.forEach((item) => {
-        if (item.nombreArticulo || item.cantidadActual || item.cantidadAnterior) {
+        const cantidadActual = parseFloat(item.cantidadActual || '0')
+        const cantidadAnterior = parseFloat(item.cantidadAnterior || '0')
+        
+        // Solo mostrar si tiene nombre de artículo o si alguna cantidad es mayor que 0
+        const shouldShow = item.nombreArticulo || cantidadActual > 0 || cantidadAnterior > 0
+        
+        if (shouldShow) {
           yPosition = checkNewPage(10)
           
           if (alternate) {
@@ -513,8 +525,6 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
           const articuloCorto = articulo.length > 25 ? articulo.substring(0, 22) + '...' : articulo
           doc.text(articuloCorto, 35, yPosition + 5)
           
-          const cantidadActual = parseFloat(item.cantidadActual || '0')
-          const cantidadAnterior = parseFloat(item.cantidadAnterior || '0')
           const diferenciaNum = cantidadActual - cantidadAnterior
           const diferencia = diferenciaNum > 0 ? `+${diferenciaNum}` : diferenciaNum.toString()
           
@@ -530,6 +540,100 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
       })
     }
 
+    // Render index page
+    const renderIndex = () => {
+      yPosition = marginTop + 18
+      
+      // Título del índice
+      doc.setFontSize(18)
+      doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b)
+      doc.setFont('helvetica', 'bold')
+      doc.text('Índice', 105, yPosition, { align: 'center' })
+      yPosition += 10
+      
+      // Línea decorativa
+      doc.setDrawColor(accentColor.r, accentColor.g, accentColor.b)
+      doc.setLineWidth(1)
+      doc.line(40, yPosition, 170, yPosition)
+      yPosition += 15
+      
+      const sectionNames = {
+        peticionCompras: 'Petición de Compras',
+        registroTrabajo: 'Registro de Trabajo',
+        comprasRealizadas: 'Compras Realizadas',
+        inventario: 'Inventario'
+      }
+      
+      // Lista de pisos con sus secciones
+      appData.pisos.forEach((piso) => {
+        const fd = piso.formData
+        
+        // Verificar qué secciones tiene este piso
+        const pisoSections = {
+          peticionCompras: sections.peticionCompras && fd.peticionesCompra.some(i => i.nombreArticulo || i.cantidad),
+          registroTrabajo: sections.registroTrabajo && fd.registrosTrabajo.some(i => i.fechaTrabajo || i.lugar || i.tipoTrabajo),
+          comprasRealizadas: sections.comprasRealizadas && fd.comprasRealizadas.some(i => i.numeroTicket || i.fecha || i.fotoTicket || i.articulos?.some(a => a.nombreArticulo)),
+          inventario: sections.inventario && fd.inventario.some(i => {
+            const cantidadActual = parseFloat(i.cantidadActual || '0')
+            const cantidadAnterior = parseFloat(i.cantidadAnterior || '0')
+            return i.nombreArticulo || cantidadActual > 0 || cantidadAnterior > 0
+          })
+        }
+        
+        const hasPisoData = Object.values(pisoSections).some(v => v)
+        
+        if (hasPisoData) {
+          // Verificar si necesitamos nueva página
+          if (yPosition > pageHeight - 60) {
+            doc.addPage()
+            pageNumber++
+            yPosition = marginTop + 18
+          }
+          
+          // Icono cuadrado para el piso
+          doc.setFillColor(118, 75, 162) // Morado
+          doc.rect(40, yPosition - 3, 3, 3, 'F')
+          
+          // Nombre del piso
+          doc.setFontSize(13)
+          doc.setTextColor(accentColor.r, accentColor.g, accentColor.b)
+          doc.setFont('helvetica', 'bold')
+          
+          const pisoName = piso.nombre.length > 40 ? piso.nombre.substring(0, 37) + '...' : piso.nombre
+          doc.text(pisoName, 46, yPosition)
+          yPosition += 8
+          
+          // Secciones del piso
+          doc.setFontSize(10)
+          doc.setFont('helvetica', 'normal')
+          doc.setTextColor(80, 80, 80)
+          
+          Object.entries(pisoSections).forEach(([key, hasData]) => {
+            if (hasData) {
+              const sectionName = sectionNames[key as keyof typeof sectionNames]
+              
+              // Icono circular pequeño para secciones
+              doc.setFillColor(102, 126, 234) // Azul
+              doc.circle(52, yPosition - 1.5, 1.2, 'F')
+              
+              doc.text(sectionName, 56, yPosition)
+              yPosition += 6
+            }
+          })
+          
+          yPosition += 5 // Espacio entre pisos
+        }
+      })
+      
+      // Añadir nueva página para el contenido
+      doc.addPage()
+      pageNumber++
+      yPosition = marginTop + 18
+    }
+
+    // Render index first
+    renderIndex()
+
     // Main generation logic - loop through pisos
     appData.pisos.forEach((piso, pisoIndex) => {
       const formData = piso.formData
@@ -542,7 +646,11 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
           item.numeroTicket || item.fecha || item.fotoTicket ||
           item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
         )) ||
-        (sections.inventario && formData.inventario.some(item => item.nombreArticulo || item.cantidadActual || item.cantidadAnterior))
+        (sections.inventario && formData.inventario.some(item => {
+          const cantidadActual = parseFloat(item.cantidadActual || '0')
+          const cantidadAnterior = parseFloat(item.cantidadAnterior || '0')
+          return item.nombreArticulo || cantidadActual > 0 || cantidadAnterior > 0
+        }))
       )
 
       if (!pisoHasData) return
