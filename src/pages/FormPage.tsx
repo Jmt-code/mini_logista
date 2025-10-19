@@ -24,7 +24,8 @@ const FormPage = () => {
     setPisoActivo,
     addPiso,
     deletePiso,
-    updatePisoNombre
+    updatePisoNombre,
+    confirmarInventario
   } = useFormStore()
   
   const formData = getFormData()
@@ -110,7 +111,7 @@ const FormPage = () => {
         }, ...formData.comprasRealizadas])
         break
       case 'inventario':
-        updateFormData(key, [{ id: newId, nombreArticulo: '', cantidad: '', prenda: '', estado: '' }, ...formData.inventario])
+        updateFormData(key, [{ id: newId, nombreArticulo: '', cantidadAnterior: '0', cantidadActual: '0', prenda: '', estado: '' }, ...formData.inventario])
         break
     }
   }
@@ -240,6 +241,7 @@ const FormPage = () => {
               onDeleteRow={(rowId: string) => handleDeleteRow(activeTab, rowId)}
               onUpdateRow={(rowId: string, field: string, value: any) => handleUpdateRow(activeTab, rowId, field, value)}
               onClearTab={handleClearTab}
+              onConfirmarInventario={activeTab === 'inventario' ? confirmarInventario : undefined}
             />
           )}
         </div>

@@ -15,6 +15,7 @@ interface FormStore {
   clearAllData: () => void
   clearTabData: (tab: keyof FormData) => void
   clearPisoData: (pisoId: string) => void
+  confirmarInventario: () => void
   importData: (data: AppData) => void
   exportData: () => string
 }
@@ -29,7 +30,7 @@ const createEmptyFormData = (): FormData => ({
     fotoTicket: '',
     articulos: [{ id: '1', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }]
   }],
-  inventario: [{ id: '1', nombreArticulo: '', cantidad: '', prenda: '', estado: '' }]
+  inventario: [{ id: '1', nombreArticulo: '', cantidadAnterior: '0', cantidadActual: '0', prenda: '', estado: '' }]
 })
 
 const initialAppData: AppData = {
@@ -146,7 +147,7 @@ export const useFormStore = create<FormStore>()(
             fotoTicket: '',
             articulos: [{ id: '1', nombreArticulo: '', cantidad: '', precioUnidad: '0.00', total: '' }]
           }],
-          inventario: [{ id: '1', nombreArticulo: '', cantidad: '', prenda: '', estado: '' }]
+          inventario: [{ id: '1', nombreArticulo: '', cantidadAnterior: '0', cantidadActual: '0', prenda: '', estado: '' }]
         }
         
         const pisos = state.appData.pisos.map(piso => {
@@ -174,6 +175,34 @@ export const useFormStore = create<FormStore>()(
         const pisos = state.appData.pisos.map(piso => 
           piso.id === pisoId ? { ...piso, formData: createEmptyFormData() } : piso
         )
+        
+        return {
+          appData: {
+            ...state.appData,
+            pisos
+          }
+        }
+      }),
+      
+      confirmarInventario: () => set((state) => {
+        const pisos = state.appData.pisos.map(piso => {
+          if (piso.id === state.appData.pisoActivo) {
+            const inventarioActualizado = piso.formData.inventario.map(item => ({
+              ...item,
+              cantidadAnterior: item.cantidadActual || item.cantidadAnterior,
+              cantidadActual: item.cantidadActual || item.cantidadAnterior
+            }))
+            
+            return {
+              ...piso,
+              formData: {
+                ...piso.formData,
+                inventario: inventarioActualizado
+              }
+            }
+          }
+          return piso
+        })
         
         return {
           appData: {

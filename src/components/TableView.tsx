@@ -9,9 +9,10 @@ interface TableViewProps {
   onDeleteRow: (rowId: string) => void
   onUpdateRow: (rowId: string, field: string, value: any) => void
   onClearTab: () => void
+  onConfirmarInventario?: () => void
 }
 
-const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab }: TableViewProps) => {
+const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab, onConfirmarInventario }: TableViewProps) => {
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean, rowId: string | null }>({
     isOpen: false,
     rowId: null
@@ -181,6 +182,10 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab
         )
       
       case 'inventario':
+        const cantidadActual = parseFloat(row.cantidadActual || '0')
+        const cantidadAnterior = parseFloat(row.cantidadAnterior || '0')
+        const diferenciaNum = cantidadActual - cantidadAnterior
+        const diferencia = diferenciaNum > 0 ? `+${diferenciaNum}` : diferenciaNum.toString()
         return (
           <>
             <div className="form-field">
@@ -194,14 +199,34 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab
               />
             </div>
             <div className="form-field">
-              <label className="field-label">Cantidad</label>
+              <label className="field-label">Cantidad Actual</label>
               <input
                 type="number"
                 className="field-input"
-                value={row.cantidad || ''}
-                onChange={(e) => onUpdateRow(row.id, 'cantidad', e.target.value)}
+                value={row.cantidadActual || ''}
+                onChange={(e) => onUpdateRow(row.id, 'cantidadActual', e.target.value)}
                 placeholder="0"
               />
+            </div>
+            <div className="form-field-row">
+              <div className="form-field form-field-half">
+                <label className="field-label">Cantidad Anterior</label>
+                <input
+                  type="text"
+                  className="field-input field-readonly"
+                  value={row.cantidadAnterior || '0'}
+                  readOnly
+                />
+              </div>
+              <div className="form-field form-field-half">
+                <label className="field-label">Diferencia</label>
+                <input
+                  type="text"
+                  className="field-input field-readonly"
+                  value={diferencia}
+                  readOnly
+                />
+              </div>
             </div>
             <div className="form-field">
               <label className="field-label">Prenda</label>
@@ -240,12 +265,12 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab
   return (
     <div className="table-view">
       <div className="table-header">
-        <h2 className="table-title">
-          {tabId === 'peticionCompras' && 'Petición de Compras'}
-          {tabId === 'registroTrabajo' && 'Registro de Trabajo'}
-          {tabId === 'comprasRealizadas' && 'Compras Realizadas'}
-          {tabId === 'inventario' && 'Inventario'}
-        </h2>
+        {tabId === 'inventario' && onConfirmarInventario && (
+          <button className="confirm-button-small" onClick={onConfirmarInventario}>
+            <span className="confirm-icon">✓</span>
+            Confirmar
+          </button>
+        )}
         <div className="header-buttons">
           <button className="clear-button" onClick={() => setClearTabConfirm(true)}>
             <span className="clear-icon">🗑️</span>

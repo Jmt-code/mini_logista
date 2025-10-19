@@ -30,7 +30,8 @@ export interface CompraRealizada {
 export interface ItemInventario {
   id: string
   nombreArticulo: string
-  cantidad: string
+  cantidadAnterior: string // Solo lectura, última cantidad confirmada
+  cantidadActual: string   // Editable, cantidad actual
   prenda: 'nuevo' | 'viejo' | 'usado' | ''
   estado: 'limpio' | 'manchado' | 'roto' | ''
 }

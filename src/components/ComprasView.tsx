@@ -120,7 +120,6 @@ const ComprasView = ({ data, onAddRow, onDeleteRow, onUpdateRow, onClearTab }: C
   return (
     <div className="table-view compras-view">
       <div className="table-header">
-        <h2 className="table-title">Compras Realizadas</h2>
         <div className="header-buttons">
           <button className="clear-button" onClick={() => setClearTabConfirm(true)}>
             <span className="clear-icon">🗑️</span>

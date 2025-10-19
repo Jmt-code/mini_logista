@@ -43,7 +43,7 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
         item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
       )),
       inventario: hasSomeData(fd => fd.inventario.some(item => 
-        item.nombreArticulo || item.cantidad
+        item.nombreArticulo || item.cantidadActual || item.cantidadAnterior
       ))
     }
   }
@@ -65,7 +65,7 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
           item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
         ).length,
         inventario: formData.inventario.filter(item => 
-          item.nombreArticulo || item.cantidad
+          item.nombreArticulo || item.cantidadActual || item.cantidadAnterior
         ).length
       }
       
@@ -458,7 +458,7 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
     }
 
     const renderInventario = (formData: FormData) => {
-      const hasData = formData.inventario.some(item => item.nombreArticulo || item.cantidad)
+      const hasData = formData.inventario.some(item => item.nombreArticulo || item.cantidadActual || item.cantidadAnterior)
       if (!hasData) return
 
       yPosition = checkNewPage(40)
@@ -478,21 +478,22 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
       doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b)
       doc.roundedRect(20, yPosition, 170, 9, 2, 2, 'F')
       
-      doc.setFontSize(10)
+      doc.setFontSize(9)
       doc.setTextColor(255, 255, 255)
       doc.setFont('helvetica', 'bold')
-      doc.text('#', 25, yPosition + 6)
-      doc.text('Artículo', 40, yPosition + 6)
-      doc.text('Cantidad', 115, yPosition + 6)
-      doc.text('Prenda', 145, yPosition + 6)
-      doc.text('Estado', 170, yPosition + 6)
+      doc.text('#', 23, yPosition + 6)
+      doc.text('Artículo', 35, yPosition + 6)
+      doc.text('Cant. Act.', 95, yPosition + 6)
+      doc.text('Dif.', 118, yPosition + 6)
+      doc.text('Prenda', 135, yPosition + 6)
+      doc.text('Estado', 160, yPosition + 6)
       yPosition += 9
       
       // Filas
       let alternate = false
       let contador = 1
       formData.inventario.forEach((item) => {
-        if (item.nombreArticulo || item.cantidad) {
+        if (item.nombreArticulo || item.cantidadActual || item.cantidadAnterior) {
           yPosition = checkNewPage(10)
           
           if (alternate) {
@@ -506,15 +507,21 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
           doc.setFontSize(9)
           doc.setTextColor(primaryColor.r, primaryColor.g, primaryColor.b)
           doc.setFont('helvetica', 'normal')
-          doc.text(`${contador}`, 25, yPosition + 5)
+          doc.text(`${contador}`, 23, yPosition + 5)
           
           const articulo = item.nombreArticulo || 'Sin especificar'
-          const articuloCorto = articulo.length > 30 ? articulo.substring(0, 27) + '...' : articulo
-          doc.text(articuloCorto, 40, yPosition + 5)
+          const articuloCorto = articulo.length > 25 ? articulo.substring(0, 22) + '...' : articulo
+          doc.text(articuloCorto, 35, yPosition + 5)
           
-          doc.text(item.cantidad || '0', 115, yPosition + 5)
-          doc.text(item.prenda ? item.prenda.charAt(0).toUpperCase() + item.prenda.slice(1) : '-', 145, yPosition + 5)
-          doc.text(item.estado ? item.estado.charAt(0).toUpperCase() + item.estado.slice(1) : '-', 170, yPosition + 5)
+          const cantidadActual = parseFloat(item.cantidadActual || '0')
+          const cantidadAnterior = parseFloat(item.cantidadAnterior || '0')
+          const diferenciaNum = cantidadActual - cantidadAnterior
+          const diferencia = diferenciaNum > 0 ? `+${diferenciaNum}` : diferenciaNum.toString()
+          
+          doc.text(item.cantidadActual || '0', 95, yPosition + 5)
+          doc.text(diferencia, 118, yPosition + 5)
+          doc.text(item.prenda ? item.prenda.charAt(0).toUpperCase() + item.prenda.slice(1) : '-', 135, yPosition + 5)
+          doc.text(item.estado ? item.estado.charAt(0).toUpperCase() + item.estado.slice(1) : '-', 160, yPosition + 5)
           
           yPosition += 7
           alternate = !alternate
@@ -535,7 +542,7 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
           item.numeroTicket || item.fecha || item.fotoTicket ||
           item.articulos?.some(art => art.nombreArticulo || art.cantidad || art.total)
         )) ||
-        (sections.inventario && formData.inventario.some(item => item.nombreArticulo || item.cantidad))
+        (sections.inventario && formData.inventario.some(item => item.nombreArticulo || item.cantidadActual || item.cantidadAnterior))
       )
 
       if (!pisoHasData) return
