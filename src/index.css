@@ -35,7 +35,7 @@ body {
 /* Mobile optimizations */
 @media (max-width: 768px) {
   :root {
-    font-size: 14px;
+    font-size: 16px; /* Increased to 16px to prevent iOS zoom */
   }
 }
 
@@ -45,6 +45,7 @@ input, textarea, select {
   user-select: text;
   color: #333 !important;
   -webkit-text-fill-color: #333 !important;
+  font-size: 16px; /* Ensure inputs are 16px */
 }
 
 input:focus, textarea:focus, select:focus {

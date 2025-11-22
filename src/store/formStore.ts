@@ -9,9 +9,9 @@ interface FormStore {
   getFormData: () => FormData
   updateFormData: (key: keyof FormData, value: any) => void
   setPisoActivo: (pisoId: string) => void
-  addPiso: (nombre: string) => void
+  addPiso: (nombre: string, descripcion: string, cama: number, bano: number, cocina: number) => void
   deletePiso: (pisoId: string) => void
-  updatePisoNombre: (pisoId: string, nombre: string) => void
+  updatePiso: (pisoId: string, nombre: string, descripcion: string, cama: number, bano: number, cocina: number) => void
   clearAllData: () => void
   clearTabData: (tab: keyof FormData) => void
   clearPisoData: (pisoId: string) => void
@@ -38,6 +38,10 @@ const initialAppData: AppData = {
     {
       id: '1',
       nombre: 'Piso 1',
+      descripcion: '',
+      cama: 0,
+      bano: 0,
+      cocina: 0,
       formData: createEmptyFormData()
     }
   ],
@@ -87,10 +91,14 @@ export const useFormStore = create<FormStore>()(
         }
       })),
       
-      addPiso: (nombre) => set((state) => {
+      addPiso: (nombre, descripcion, cama, bano, cocina) => set((state) => {
         const newPiso: Piso = {
           id: Date.now().toString(),
           nombre,
+          descripcion,
+          cama,
+          bano,
+          cocina,
           formData: createEmptyFormData()
         }
         
@@ -121,9 +129,9 @@ export const useFormStore = create<FormStore>()(
         }
       }),
       
-      updatePisoNombre: (pisoId, nombre) => set((state) => {
+      updatePiso: (pisoId, nombre, descripcion, cama, bano, cocina) => set((state) => {
         const pisos = state.appData.pisos.map(piso => 
-          piso.id === pisoId ? { ...piso, nombre } : piso
+          piso.id === pisoId ? { ...piso, nombre, descripcion, cama, bano, cocina } : piso
         )
         
         return {

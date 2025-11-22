@@ -139,6 +139,89 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
       return yPosition
     }
 
+    // Función para renderizar información del piso
+    const renderPisoInfo = (piso: { nombre: string; descripcion: string; cama: number; bano: number; cocina: number }) => {
+      const hasStats = piso.cama > 0 || piso.bano > 0 || piso.cocina > 0
+      const hasDescripcion = piso.descripcion && piso.descripcion.trim() !== ''
+      
+      if (!hasStats && !hasDescripcion) return
+      
+      yPosition = checkNewPage(40)
+      
+      if (hasStats) {
+        doc.setFontSize(9)
+        
+        if (piso.cama > 0) {
+          doc.setTextColor(80, 80, 80)
+          doc.setFont('helvetica', 'normal')
+          doc.text('Camas:', 25, yPosition)
+          
+          doc.setTextColor(50, 50, 50)
+          doc.setFont('helvetica', 'bold')
+          doc.text(piso.cama.toString(), 45, yPosition)
+          
+          yPosition += 5
+        }
+        
+        if (piso.bano > 0) {
+          doc.setTextColor(80, 80, 80)
+          doc.setFont('helvetica', 'normal')
+          doc.text('Baños:', 25, yPosition)
+          
+          doc.setTextColor(50, 50, 50)
+          doc.setFont('helvetica', 'bold')
+          doc.text(piso.bano.toString(), 45, yPosition)
+          
+          yPosition += 5
+        }
+        
+        if (piso.cocina > 0) {
+          doc.setTextColor(80, 80, 80)
+          doc.setFont('helvetica', 'normal')
+          doc.text('Cocinas:', 25, yPosition)
+          
+          doc.setTextColor(50, 50, 50)
+          doc.setFont('helvetica', 'bold')
+          doc.text(piso.cocina.toString(), 45, yPosition)
+          
+          yPosition += 5
+        }
+        
+        yPosition += 3 // Espacio después de las stats
+      }
+      
+      
+      if (hasDescripcion) {
+        yPosition = checkNewPage(20)
+        
+        doc.setFontSize(9)
+        const maxWidth = 158
+        const descripcionLines = doc.splitTextToSize(piso.descripcion, maxWidth)
+        const boxHeight = (descripcionLines.length * 4) + 6 // Altura del texto + padding
+        
+        // Caja gris estilo oficina con bordes redondeados
+        doc.setFillColor(245, 245, 245) // Gris claro
+        doc.setDrawColor(200, 200, 200) // Borde gris
+        doc.setLineWidth(0.3)
+        doc.roundedRect(20, yPosition, 170, boxHeight, 2, 2, 'FD')
+        
+        // Barra lateral izquierda más sutil (redondeada en las esquinas)
+        doc.setFillColor(180, 180, 180)
+        doc.roundedRect(20, yPosition, 2, boxHeight, 2, 2, 'F')
+        
+        // Texto de la descripción en cursiva
+        doc.setFont('helvetica', 'italic')
+        doc.setTextColor(70, 70, 70)
+        
+        const textStartY = yPosition + 4
+        descripcionLines.forEach((line: string, index: number) => {
+          doc.text(line, 25, textStartY + (index * 4))
+        })
+        
+        yPosition += boxHeight + 8
+      }
+    }
+
     // Render functions for each section
     const renderPeticionCompras = (formData: FormData) => {
       const hasData = formData.peticionesCompra.some(item => item.nombreArticulo || item.cantidad)
@@ -713,6 +796,9 @@ const PDFGenerator = ({ appData }: PDFGeneratorProps) => {
         doc.line(20, yPosition, 190, yPosition)
         yPosition += 10
       }
+
+      // Renderizar información del piso (stats y descripción)
+      renderPisoInfo(piso)
 
       // Render each selected section for this piso
       if (sections.peticionCompras) renderPeticionCompras(formData)

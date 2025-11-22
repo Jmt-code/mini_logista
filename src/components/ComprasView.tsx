@@ -250,6 +250,7 @@ const ComprasView = ({ data, onAddRow, onDeleteRow, onUpdateRow, onClearTab }: C
                                 <label className="field-label-small">Cant.</label>
                                 <input
                                   type="number"
+                                  inputMode="numeric"
                                   className="field-input field-input-small"
                                   value={articulo.cantidad || ''}
                                   onChange={(e) => handleUpdateArticulo(ticket.id, articulo.id, 'cantidad', e.target.value)}
@@ -262,6 +263,7 @@ const ComprasView = ({ data, onAddRow, onDeleteRow, onUpdateRow, onClearTab }: C
                                 <input
                                   type="number"
                                   step="0.01"
+                                  inputMode="decimal"
                                   className="field-input field-input-small"
                                   value={articulo.total || ''}
                                   onChange={(e) => handleUpdateArticulo(ticket.id, articulo.id, 'total', e.target.value)}

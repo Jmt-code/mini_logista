@@ -6,10 +6,12 @@ function App() {
   return (
     <Router basename="/mini_logista">
       <div className="app">
-        <Routes>
-          <Route path="/" element={<FormPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <div className="app-container">
+          <Routes>
+            <Route path="/" element={<FormPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
       </div>
     </Router>
   )

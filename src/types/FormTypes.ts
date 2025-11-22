@@ -46,6 +46,10 @@ export interface FormData {
 export interface Piso {
   id: string
   nombre: string
+  descripcion: string
+  cama: number
+  bano: number
+  cocina: number
   formData: FormData
 }
 

@@ -24,7 +24,7 @@ const FormPage = () => {
     setPisoActivo,
     addPiso,
     deletePiso,
-    updatePisoNombre,
+    updatePiso,
     confirmarInventario
   } = useFormStore()
   
@@ -258,7 +258,7 @@ const FormPage = () => {
           onSelectPiso={setPisoActivo}
           onAddPiso={addPiso}
           onDeletePiso={deletePiso}
-          onUpdateNombre={updatePisoNombre}
+          onUpdatePiso={updatePiso}
           onClose={() => setShowPisosManager(false)}
         />
       )}

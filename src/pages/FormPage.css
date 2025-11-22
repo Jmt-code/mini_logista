@@ -20,6 +20,7 @@
 
 .form-header {
   padding: 1.5rem 1rem;
+  padding-top: max(1.5rem, env(safe-area-inset-top)); /* Safe area support */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
   display: flex;
@@ -96,6 +97,7 @@
 
 .footer-actions {
   padding: 1.2rem;
+  padding-bottom: max(1.2rem, env(safe-area-inset-bottom)); /* Safe area support */
   background: white;
   border-top: none;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);

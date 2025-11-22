@@ -72,6 +72,7 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab
               <label className="field-label">Cantidad</label>
               <input
                 type="number"
+                inputMode="numeric"
                 className="field-input"
                 value={row.cantidad || ''}
                 onChange={(e) => onUpdateRow(row.id, 'cantidad', e.target.value)}
@@ -152,6 +153,7 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab
               <label className="field-label">Cantidad</label>
               <input
                 type="number"
+                inputMode="numeric"
                 className="field-input"
                 value={row.cantidad || ''}
                 onChange={(e) => onUpdateRow(row.id, 'cantidad', e.target.value)}
@@ -163,6 +165,7 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab
               <input
                 type="number"
                 step="0.01"
+                inputMode="decimal"
                 className="field-input"
                 value={row.total || ''}
                 onChange={(e) => onUpdateRow(row.id, 'total', e.target.value)}
@@ -202,6 +205,7 @@ const TableView = ({ tabId, data, onAddRow, onDeleteRow, onUpdateRow, onClearTab
               <label className="field-label">Cantidad Actual</label>
               <input
                 type="number"
+                inputMode="numeric"
                 className="field-input"
                 value={row.cantidadActual || ''}
                 onChange={(e) => onUpdateRow(row.id, 'cantidadActual', e.target.value)}

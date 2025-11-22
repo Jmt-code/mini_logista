@@ -18,8 +18,8 @@
 }
 
 .close-modal-btn {
-  width: 32px;
-  height: 32px;
+  width: 44px; /* Increased from 32px */
+  height: 44px; /* Increased from 32px */
   border-radius: 50%;
   border: none;
   background: #f0f0f0;
@@ -110,6 +110,35 @@
   color: white;
 }
 
+.piso-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.piso-stats-mini {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.stat-mini {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  color: #4a5568;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 0.15rem 0.4rem;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.piso-item.active .stat-mini {
+  color: white;
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .piso-actions {
   display: flex;
   gap: 0.75rem;
@@ -118,8 +147,8 @@
 
 .btn-edit-piso,
 .btn-delete-piso {
-  width: 40px;
-  height: 40px;
+  width: 44px; /* Increased from 40px */
+  height: 44px; /* Increased from 40px */
   border-radius: 8px;
   border: none;
   background: white;
@@ -295,6 +324,229 @@
   font-weight: bold;
 }
 
+/* Contenido del piso (nombre + descripción) */
+.piso-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.piso-descripcion {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #718096;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+}
+
+.piso-item.active .piso-descripcion {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Modal del formulario de piso */
+.piso-form-modal {
+  max-width: 440px;
+  width: 90%;
+  padding: 0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.piso-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.piso-form-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+.piso-form-header .close-btn {
+  width: 44px; /* Increased from 32px */
+  height: 44px; /* Increased from 32px */
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.piso-form-header .close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.piso-form-body {
+  padding: 1.5rem;
+  background: white;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.form-label .required {
+  color: #ff6b6b;
+  margin-left: 0.25rem;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f7fafc;
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background: white;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.5;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.form-group-small {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label-small {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-align: center;
+}
+
+.form-input-small {
+  width: 100%;
+  padding: 0.625rem 0.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f7fafc;
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+.form-input-small:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background: white;
+}
+
+/* Ocultar flechas de número en Chrome, Safari, Edge, Opera */
+.form-input-small::-webkit-outer-spin-button,
+.form-input-small::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Ocultar flechas de número en Firefox */
+.form-input-small[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.piso-form-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.piso-form-footer .btn-cancel,
+.piso-form-footer .btn-save {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.piso-form-footer .btn-cancel {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.piso-form-footer .btn-cancel:hover {
+  background: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+.piso-form-footer .btn-save {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.piso-form-footer .btn-save:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+}
+
+.piso-form-footer .btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .pisos-modal {
@@ -319,6 +571,15 @@
     font-size: 0.95rem;
   }
 
+  .piso-descripcion {
+    font-size: 0.8rem;
+  }
+
+  .stat-mini {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.3rem;
+  }
+
   .btn-edit-piso,
   .btn-delete-piso,
   .btn-save-edit,
@@ -328,16 +589,51 @@
     font-size: 1rem;
   }
 
-  .add-piso-form {
-    flex-direction: column;
-  }
-
-  .add-piso-input {
-    min-width: 100%;
+  .add-piso-section {
+    padding-top: 1.5rem;
   }
 
   .btn-add-piso {
     width: 100%;
     justify-content: center;
+  }
+
+  .piso-form-modal {
+    max-width: 95%;
+  }
+
+  .piso-form-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .piso-form-title {
+    font-size: 1.05rem;
+  }
+
+  .piso-form-body {
+    padding: 1.25rem;
+  }
+
+  .form-row {
+    gap: 0.5rem;
+  }
+
+  .form-label-small {
+    font-size: 0.8rem;
+  }
+
+  .form-input-small {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.95rem;
+  }
+
+  .piso-form-footer {
+    padding: 1rem 1.25rem;
+    flex-direction: column;
+  }
+
+  .piso-form-footer .btn-cancel,
+  .piso-form-footer .btn-save {
+    width: 100%;
   }
 }
